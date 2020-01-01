@@ -7,17 +7,35 @@ class Parser {
 
   Parser(this._tokens);
 
-  Expr parse() {
-    try {
-      return expression();
-    } catch (error) {
-      print(error);
-      return null;
+  List<Stmt> parse() {
+    var statements = <Stmt>[];
+    while (!isAtEnd()) {
+      statements.add(statement());
     }
+
+    return statements;
   }
 
   Expr expression() {
     return equality();
+  }
+
+  Stmt statement() {
+    if (match(PRINT)) return printStatement();
+
+    return expressionStatement();
+  }
+
+  Stmt printStatement() {
+    var value = expression();
+    consume(SEMICOLON, "Expect ';' after value.");
+    return Print(value);
+  }
+
+  Stmt expressionStatement() {
+    var expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression.");
+    return Expression(expr);
   }
 
   Expr equality() {

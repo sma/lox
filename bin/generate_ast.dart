@@ -15,6 +15,11 @@ void main(List<String> args) {
     "Unary    : Token operator, Expr right",
   ]);
 
+  defineAst(outputDir, "Stmt", [
+    "Expression : Expr expression",
+    "Print      : Expr expression",
+  ]);
+
   var writer = File('$outputDir/ast.dart').openWrite();
   writer.writeln('library ast;');
   writer.writeln();

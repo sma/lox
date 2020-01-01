@@ -2,7 +2,7 @@ import 'ast.dart';
 import 'token.dart';
 import 'token_type.dart';
 
-class Interpreter implements ExprVisitor<Object> {
+class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   @override
   Object visitLiteralExpr(Literal expr) {
     return expr.value;
@@ -46,6 +46,21 @@ class Interpreter implements ExprVisitor<Object> {
 
   Object evaluate(Expr expr) {
     return expr.accept(this);
+  }
+
+  void execute(Stmt stmt) {
+    stmt.accept(this);
+  }
+
+  @override
+  void visitExpressionStmt(Expression stmt) {
+    evaluate(stmt.expression);
+  }
+
+  @override
+  void visitPrintStmt(Print stmt) {
+    var value = evaluate(stmt.expression);
+    print(stringify(value));
   }
 
   @override
@@ -108,10 +123,11 @@ class Interpreter implements ExprVisitor<Object> {
     return object.toString();
   }
 
-  void interpret(Expr expression) {
+  void interpret(List<Stmt> statements) {
     try {
-      var value = evaluate(expression);
-      print(stringify(value));
+      for (var statement in statements) {
+        execute(statement);
+      }
     } catch (error) {
       print(error);
     }

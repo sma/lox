@@ -9,9 +9,7 @@ class Lox {
     var scanner = Scanner(source);
     var tokens = scanner.scanTokens();
     var parser = Parser(tokens);
-    var expression = parser.parse();
-    if (expression != null) {
-      interpreter.interpret(expression);
-    }
+    var statements = parser.parse();
+    interpreter.interpret(statements);
   }
 }
