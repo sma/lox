@@ -1,5 +1,7 @@
 import 'dart:io';
 
+var files = <String>[];
+
 void main(List<String> args) {
   if (args.length != 1) {
     stderr.writeln("Usage: generate_ast <output directory>");
@@ -12,17 +14,28 @@ void main(List<String> args) {
     "Literal  : Object value",
     "Unary    : Token operator, Expr right",
   ]);
+
+  var writer = File('$outputDir/ast.dart').openWrite();
+  writer.writeln('library ast;');
+  writer.writeln();
+  writer.writeln("import 'token.dart';");
+  writer.writeln();
+  for (var file in files) {
+    writer.writeln("part '$file';");
+  }
+  writer.close();
 }
 
 void defineAst(String outputDir, String baseName, List<String> types) {
-  var path = outputDir + "/" + snakeCase(baseName) + ".dart";
-  var writer = File(path).openWrite();
+  var file = snakeCase(baseName) + '.dart';
+  files.add(file);
+  var writer = File('$outputDir/$file').openWrite();
 
-  writer.writeln("import 'package:lox/token.dart';");
+  writer.writeln("part of ast;");
   writer.writeln();
   writer.writeln("abstract class " + baseName + " {");
   // The base accept() method.
-  writer.writeln("  R accept<R>(Visitor<R> visitor);");
+  writer.writeln("  R accept<R>(${baseName}Visitor<R> visitor);");
   writer.writeln("}");
   writer.writeln();
 
@@ -39,7 +52,7 @@ void defineAst(String outputDir, String baseName, List<String> types) {
 }
 
 void defineVisitor(IOSink writer, String baseName, List<String> types) {
-  writer.writeln("abstract class Visitor<R> {");
+  writer.writeln("abstract class ${baseName}Visitor<R> {");
 
   for (var type in types) {
     var typeName = type.split(":")[0].trim();
@@ -68,7 +81,7 @@ void defineType(IOSink writer, String baseName, String className, String fieldLi
   // Visitor pattern.
   writer.writeln();
   writer.writeln("  @override");
-  writer.writeln("  R accept<R>(Visitor<R> visitor) {");
+  writer.writeln("  R accept<R>(${baseName}Visitor<R> visitor) {");
   writer.writeln("    return visitor.visit$className$baseName(this);");
   writer.writeln("  }");
 

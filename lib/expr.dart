@@ -1,10 +1,10 @@
-import 'package:lox/token.dart';
+part of ast;
 
 abstract class Expr {
-  R accept<R>(Visitor<R> visitor);
+  R accept<R>(ExprVisitor<R> visitor);
 }
 
-abstract class Visitor<R> {
+abstract class ExprVisitor<R> {
   R visitBinaryExpr(Binary expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
@@ -19,7 +19,7 @@ class Binary extends Expr {
   );
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitBinaryExpr(this);
   }
 
@@ -34,7 +34,7 @@ class Grouping extends Expr {
   );
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitGroupingExpr(this);
   }
 
@@ -47,7 +47,7 @@ class Literal extends Expr {
   );
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitLiteralExpr(this);
   }
 
@@ -61,7 +61,7 @@ class Unary extends Expr {
   );
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitUnaryExpr(this);
   }
 
