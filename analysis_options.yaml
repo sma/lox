@@ -3,9 +3,10 @@ include: package:pedantic/analysis_options.yaml
 linter:
   rules:
     prefer_single_quotes: false
-    library_prefixes: false
 
 analyzer:
+  errors:
+    deprecated_function_class_declaration: false
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false

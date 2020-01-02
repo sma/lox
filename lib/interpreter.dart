@@ -1,6 +1,7 @@
 import 'ast.dart';
 import 'environment.dart';
 import 'lox_callable.dart';
+import 'lox_function.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 import 'token_type.dart';
@@ -118,6 +119,12 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   @override
   void visitExpressionStmt(Expression stmt) {
     evaluate(stmt.expression);
+  }
+
+  @override
+  void visitFunctionStmt(Function stmt) {
+    var function = LoxFunction(stmt);
+    environment.define(stmt.name.lexeme, function);
   }
 
   @override
