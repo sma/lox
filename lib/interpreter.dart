@@ -124,7 +124,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   void visitFunctionStmt(Function stmt) {
-    var function = LoxFunction(stmt);
+    var function = LoxFunction(stmt, environment);
     environment.define(stmt.name.lexeme, function);
   }
 

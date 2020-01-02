@@ -6,14 +6,16 @@ import 'lox_return.dart';
 
 class LoxFunction implements LoxCallable {
   final Function declaration;
-  LoxFunction(this.declaration);
+  final Environment closure;
+
+  LoxFunction(this.declaration, this.closure);
 
   @override
   int get arity => declaration.params.length;
 
   @override
   Object call(Interpreter interpreter, List<Object> arguments) {
-    var environment = Environment(interpreter.globals);
+    var environment = Environment(closure);
     for (var i = 0; i < declaration.params.length; i++) {
       environment.define(declaration.params[i].lexeme, arguments[i]);
     }
