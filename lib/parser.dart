@@ -28,12 +28,54 @@ class Parser {
   }
 
   Stmt statement() {
+    if (match(FOR)) return forStatement();
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
     if (match(WHILE)) return whileStatement();
     if (match(LEFT_BRACE)) return Block(block());
 
     return expressionStatement();
+  }
+
+  Stmt forStatement() {
+    consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+    Stmt initializer;
+    if (match(SEMICOLON)) {
+      initializer = null;
+    } else if (match(VAR)) {
+      initializer = varDeclaration();
+    } else {
+      initializer = expressionStatement();
+    }
+
+    Expr condition;
+    if (!check(SEMICOLON)) {
+      condition = expression();
+    }
+    consume(SEMICOLON, "Expect ';' after loop condition.");
+
+    Expr increment;
+    if (!check(RIGHT_PAREN)) {
+      increment = expression();
+    }
+    consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+    var body = statement();
+
+    if (increment != null) {
+      body = Block([
+        body,
+        Expression(increment),
+      ]);
+    }
+
+    body = While(condition ?? Literal(true), body);
+
+    if (initializer != null) {
+      body = Block([initializer, body]);
+    }
+
+    return body;
   }
 
   Stmt ifStatement() {
