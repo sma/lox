@@ -18,7 +18,7 @@ class Parser {
   }
 
   Expr expression() {
-    return equality();
+    return assignment();
   }
 
   Stmt declaration() {
@@ -55,6 +55,24 @@ class Parser {
     var expr = expression();
     consume(SEMICOLON, "Expect ';' after expression.");
     return Expression(expr);
+  }
+
+  Expr assignment() {
+    var expr = equality();
+
+    if (match(EQUAL)) {
+      var equals = previous();
+      var value = assignment();
+
+      if (expr is Variable) {
+        var name = expr.name;
+        return Assign(name, value);
+      }
+
+      error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
   }
 
   Expr equality() {

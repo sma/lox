@@ -12,6 +12,15 @@ class Environment {
     throw RuntimeError(name, "Undefined variable '${name.lexeme}'.");
   }
 
+  void assign(Token name, Object value) {
+    if (_values.containsKey(name.lexeme)) {
+      _values[name.lexeme] = value;
+      return;
+    }
+
+    throw RuntimeError(name, "Undefined variable '${name.lexeme}'.");
+  }
+
   void define(String name, Object value) {
     _values[name] = value;
   }

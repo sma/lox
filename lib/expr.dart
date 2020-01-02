@@ -5,11 +5,27 @@ abstract class Expr {
 }
 
 abstract class ExprVisitor<R> {
+  R visitAssignExpr(Assign expr);
   R visitBinaryExpr(Binary expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
   R visitUnaryExpr(Unary expr);
   R visitVariableExpr(Variable expr);
+}
+
+class Assign extends Expr {
+  Assign(
+    this.name,
+    this.value,
+  );
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitAssignExpr(this);
+  }
+
+  final Token name;
+  final Expr value;
 }
 
 class Binary extends Expr {

@@ -83,6 +83,14 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
+  Object visitAssignExpr(Assign expr) {
+    var value = evaluate(expr.value);
+
+    environment.assign(expr.name, value);
+    return value;
+  }
+
+  @override
   Object visitBinaryExpr(Binary expr) {
     var left = evaluate(expr.left);
     var right = evaluate(expr.right);
