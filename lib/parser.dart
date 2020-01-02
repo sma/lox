@@ -230,7 +230,37 @@ class Parser {
       return Unary(operator, right);
     }
 
-    return primary();
+    return call();
+  }
+
+  Expr call() {
+    var expr = primary();
+
+    while (true) {
+      if (match(LEFT_PAREN)) {
+        expr = finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  Expr finishCall(Expr callee) {
+    var arguments = <Expr>[];
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (arguments.length >= 255) {
+          error(peek(), "Cannot have more than 255 arguments.");
+        }
+        arguments.add(expression());
+      } while (match(COMMA));
+    }
+
+    var paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+
+    return Call(callee, paren, arguments);
   }
 
   Expr primary() {

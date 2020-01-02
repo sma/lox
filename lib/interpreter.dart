@@ -1,11 +1,23 @@
 import 'ast.dart';
 import 'environment.dart';
+import 'lox_callable.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
-  var environment = Environment();
+  final globals = Environment();
+  Environment environment;
+
+  Interpreter() {
+    globals.define(
+      "clock",
+      LoxCallable(0, (interpreter, arguments) {
+        return DateTime.now().millisecondsSinceEpoch / 1000;
+      }),
+    );
+    environment = globals;
+  }
 
   @override
   Object visitLiteralExpr(Literal expr) {
@@ -181,6 +193,25 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       default:
         return null;
     }
+  }
+
+  @override
+  Object visitCallExpr(Call expr) {
+    var callee = evaluate(expr.callee);
+    if (callee is LoxCallable) {
+      var arguments = <Object>[];
+      for (var argument in expr.arguments) {
+        arguments.add(evaluate(argument));
+      }
+      if (arguments.length != callee.arity) {
+        throw RuntimeError(
+            expr.paren,
+            'Expected ${callee.arity} arguments '
+            'but got ${arguments.length}.');
+      }
+      return callee.call(this, arguments);
+    }
+    throw RuntimeError(expr.paren, 'Can only call functions and classes.');
   }
 
   bool isEqual(Object a, Object b) => a == b;
