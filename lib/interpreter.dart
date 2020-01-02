@@ -125,6 +125,14 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
+  void visitWhileStmt(While stmt) {
+    while (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.body);
+    }
+    return null;
+  }
+
+  @override
   Object visitAssignExpr(Assign expr) {
     var value = evaluate(expr.value);
 

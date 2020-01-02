@@ -30,6 +30,7 @@ class Parser {
   Stmt statement() {
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
+    if (match(WHILE)) return whileStatement();
     if (match(LEFT_BRACE)) return Block(block());
 
     return expressionStatement();
@@ -62,6 +63,15 @@ class Parser {
 
     consume(SEMICOLON, "Expect ';' after variable declaration.");
     return Var(name, initializer);
+  }
+
+  Stmt whileStatement() {
+    consume(LEFT_PAREN, "Expect '(' after 'while'.");
+    var condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after condition.");
+    var body = statement();
+
+    return While(condition, body);
   }
 
   Stmt expressionStatement() {
