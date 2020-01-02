@@ -28,10 +28,22 @@ class Parser {
   }
 
   Stmt statement() {
+    if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
     if (match(LEFT_BRACE)) return Block(block());
 
     return expressionStatement();
+  }
+
+  Stmt ifStatement() {
+    consume(LEFT_PAREN, "Expect '(' after 'if'.");
+    var condition = expression();
+    consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+    var thenBranch = statement();
+    var elseBranch = match(ELSE) ? statement() : null;
+
+    return If(condition, thenBranch, elseBranch);
   }
 
   Stmt printStatement() {
@@ -70,7 +82,7 @@ class Parser {
   }
 
   Expr assignment() {
-    var expr = equality();
+    var expr = or();
 
     if (match(EQUAL)) {
       var equals = previous();
@@ -82,6 +94,30 @@ class Parser {
       }
 
       error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+  Expr or() {
+    var expr = and();
+
+    while (match(OR)) {
+      var operator = previous();
+      var right = and();
+      expr = Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  Expr and() {
+    var expr = equality();
+
+    while (match(AND)) {
+      var operator = previous();
+      var right = equality();
+      expr = Logical(expr, operator, right);
     }
 
     return expr;

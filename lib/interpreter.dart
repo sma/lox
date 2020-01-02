@@ -13,6 +13,19 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
+  Object visitLogicalExpr(Logical expr) {
+    var left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
+  }
+
+  @override
   Object visitGroupingExpr(Grouping expr) {
     return evaluate(expr.expression);
   }
@@ -78,6 +91,16 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     } finally {
       this.environment = previous;
     }
+  }
+
+  @override
+  void visitIfStmt(If stmt) {
+    if (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      execute(stmt.elseBranch);
+    }
+    return null;
   }
 
   @override

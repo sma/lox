@@ -7,6 +7,7 @@ abstract class Stmt {
 abstract class StmtVisitor<R> {
   R visitBlockStmt(Block stmt);
   R visitExpressionStmt(Expression stmt);
+  R visitIfStmt(If stmt);
   R visitPrintStmt(Print stmt);
   R visitVarStmt(Var stmt);
 }
@@ -35,6 +36,23 @@ class Expression extends Stmt {
   }
 
   final Expr expression;
+}
+
+class If extends Stmt {
+  If(
+    this.condition,
+    this.thenBranch,
+    this.elseBranch,
+  );
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitIfStmt(this);
+  }
+
+  final Expr condition;
+  final Stmt thenBranch;
+  final Stmt elseBranch;
 }
 
 class Print extends Stmt {
