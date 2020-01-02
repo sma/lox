@@ -5,7 +5,7 @@ import 'token.dart';
 import 'token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
-  final environment = Environment();
+  var environment = Environment();
 
   @override
   Object visitLiteralExpr(Literal expr) {
@@ -59,6 +59,25 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   void execute(Stmt stmt) {
     stmt.accept(this);
+  }
+
+  @override
+  void visitBlockStmt(Block stmt) {
+    executeBlock(stmt.statements, Environment(environment));
+    return null;
+  }
+
+  void executeBlock(List<Stmt> statements, Environment environment) {
+    var previous = this.environment;
+    try {
+      this.environment = environment;
+
+      for (var statement in statements) {
+        execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   @override

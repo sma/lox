@@ -29,6 +29,7 @@ class Parser {
 
   Stmt statement() {
     if (match(PRINT)) return printStatement();
+    if (match(LEFT_BRACE)) return Block(block());
 
     return expressionStatement();
   }
@@ -55,6 +56,17 @@ class Parser {
     var expr = expression();
     consume(SEMICOLON, "Expect ';' after expression.");
     return Expression(expr);
+  }
+
+  List<Stmt> block() {
+    var statements = <Stmt>[];
+
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      statements.add(declaration());
+    }
+
+    consume(RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
   }
 
   Expr assignment() {
