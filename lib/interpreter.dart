@@ -1,4 +1,5 @@
 import 'ast.dart';
+import 'runtime_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
@@ -124,19 +125,8 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   void interpret(List<Stmt> statements) {
-    try {
       for (var statement in statements) {
         execute(statement);
       }
-    } catch (error) {
-      print(error);
-    }
   }
-}
-
-class RuntimeError implements Exception {
-  final Token token;
-  final String message;
-
-  RuntimeError(this.token, this.message);
 }

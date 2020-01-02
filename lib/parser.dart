@@ -1,4 +1,5 @@
 import 'ast.dart';
+import 'runtime_error.dart';
 import 'token.dart';
 
 class Parser {
@@ -154,10 +155,9 @@ class Parser {
   }
 
   Exception error(Token token, String message) {
-    if (token.type == TokenType.EOF) {
-      return Exception('[line ${token.line}] at end: $message');
-    } else {
-      return Exception('[line ${token.line}] at "${token.lexeme}": $message');
+    return RuntimeError(token, message);
+  }
+
     }
   }
 }

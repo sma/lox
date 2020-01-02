@@ -1,4 +1,4 @@
-import 'error.dart';
+import 'runtime_error.dart';
 import 'token.dart';
 
 class Scanner {
@@ -98,7 +98,10 @@ class Scanner {
         } else if (_isAlpha(c)) {
           _identifier();
         } else {
-          error(_line, 'Unexpected character.');
+          throw RuntimeError(
+            Token(TokenType.IDENTIFIER, c, null, _line),
+            'Unexpected character.',
+          );
         }
     }
   }
@@ -140,8 +143,10 @@ class Scanner {
 
     // Unterminated string.
     if (_isAtEnd) {
-      error(_line, 'Unterminated string.');
-      return;
+      throw RuntimeError(
+        Token(TokenType.EOF, null, null, _line),
+        'Unterminated string.',
+      );
     }
 
     // The closing ".
