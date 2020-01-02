@@ -9,6 +9,7 @@ import 'token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   final globals = Environment();
+  final locals = <Expr, int>{};
   Environment environment;
 
   Interpreter() {
@@ -60,8 +61,17 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   Object visitVariableExpr(Variable expr) {
-    return environment.get(expr.name);
+    return lookUpVariable(expr.name, expr);
   }
+
+  Object lookUpVariable(Token name, Expr expr) {
+    var distance = locals[expr];                
+    if (distance != null) {                             
+      return environment.getAt(distance, name.lexeme);  
+    } else {                                            
+      return globals.get(name);                         
+    }                                                   
+  }                   
 
   double checkNumberOperand(Token operator, Object operand) {
     if (operand is double) return operand;
@@ -86,6 +96,10 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   void execute(Stmt stmt) {
     stmt.accept(this);
+  }
+
+  void resolve(Expr expr, int depth) {
+    locals[expr] = depth;
   }
 
   @override
@@ -162,7 +176,12 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   Object visitAssignExpr(Assign expr) {
     var value = evaluate(expr.value);
 
-    environment.assign(expr.name, value);
+    var distance = locals[expr];               
+    if (distance != null) {                            
+      environment.assignAt(distance, expr.name, value);
+    } else {                                           
+      globals.assign(expr.name, value);                
+    }              
     return value;
   }
 
