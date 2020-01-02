@@ -13,11 +13,13 @@ void main(List<String> args) {
     "Grouping : Expr expression",
     "Literal  : Object value",
     "Unary    : Token operator, Expr right",
+    "Variable : Token name",
   ]);
 
   defineAst(outputDir, "Stmt", [
     "Expression : Expr expression",
     "Print      : Expr expression",
+    "Var        : Token name, Expr initializer",
   ]);
 
   var writer = File('$outputDir/ast.dart').openWrite();

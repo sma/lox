@@ -11,7 +11,7 @@ class Parser {
   List<Stmt> parse() {
     var statements = <Stmt>[];
     while (!isAtEnd()) {
-      statements.add(statement());
+      statements.add(declaration());
     }
 
     return statements;
@@ -19,6 +19,12 @@ class Parser {
 
   Expr expression() {
     return equality();
+  }
+
+  Stmt declaration() {
+    if (match(VAR)) return varDeclaration();
+
+    return statement();
   }
 
   Stmt statement() {
@@ -31,6 +37,18 @@ class Parser {
     var value = expression();
     consume(SEMICOLON, "Expect ';' after value.");
     return Print(value);
+  }
+
+  Stmt varDeclaration() {
+    var name = consume(IDENTIFIER, "Expect variable name.");
+
+    Expr initializer;
+    if (match(EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return Var(name, initializer);
   }
 
   Stmt expressionStatement() {
@@ -106,6 +124,10 @@ class Parser {
       return Literal(previous().literal);
     }
 
+    if (match(IDENTIFIER)) {
+      return Variable(previous());
+    }
+
     if (match(LEFT_PAREN)) {
       var expr = expression();
       consume(RIGHT_PAREN, "Expect ')' after expression.");
@@ -158,6 +180,25 @@ class Parser {
     return RuntimeError(token, message);
   }
 
+  void synchronize() {
+    advance();
+
+    while (!isAtEnd()) {
+      if (previous().type == SEMICOLON) return;
+
+      switch (peek().type) {
+        case CLASS:
+        case FUN:
+        case VAR:
+        case FOR:
+        case IF:
+        case WHILE:
+        case PRINT:
+        case RETURN:
+          return;
+        default:
+          advance();
+      }
     }
   }
 }

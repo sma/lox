@@ -1,9 +1,12 @@
 import 'ast.dart';
+import 'environment.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
 class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
+  final environment = Environment();
+
   @override
   Object visitLiteralExpr(Literal expr) {
     return expr.value;
@@ -26,6 +29,11 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       default:
         return null;
     }
+  }
+
+  @override
+  Object visitVariableExpr(Variable expr) {
+    return environment.get(expr.name);
   }
 
   double checkNumberOperand(Token operator, Object operand) {
@@ -62,6 +70,16 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   void visitPrintStmt(Print stmt) {
     var value = evaluate(stmt.expression);
     print(stringify(value));
+  }
+
+  @override
+  void visitVarStmt(Var stmt) {
+    Object value;
+    if (stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+
+    environment.define(stmt.name.lexeme, value);
   }
 
   @override
@@ -125,8 +143,8 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   void interpret(List<Stmt> statements) {
-      for (var statement in statements) {
-        execute(statement);
-      }
+    for (var statement in statements) {
+      execute(statement);
+    }
   }
 }
