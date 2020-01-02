@@ -2,6 +2,7 @@ import 'ast.dart';
 import 'environment.dart';
 import 'interpreter.dart';
 import 'lox_callable.dart';
+import 'lox_return.dart';
 
 class LoxFunction implements LoxCallable {
   final Function declaration;
@@ -17,7 +18,11 @@ class LoxFunction implements LoxCallable {
       environment.define(declaration.params[i].lexeme, arguments[i]);
     }
 
-    interpreter.executeBlock(declaration.body, environment);
+    try {
+      interpreter.executeBlock(declaration.body, environment);
+    } on LoxReturn catch (returnValue) {
+      return returnValue.value;
+    }
     return null;
   }
 

@@ -32,6 +32,7 @@ class Parser {
     if (match(FOR)) return forStatement();
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
+    if (match(RETURN)) return returnStatement();
     if (match(WHILE)) return whileStatement();
     if (match(LEFT_BRACE)) return Block(block());
 
@@ -94,6 +95,14 @@ class Parser {
     var value = expression();
     consume(SEMICOLON, "Expect ';' after value.");
     return Print(value);
+  }
+
+  Stmt returnStatement() {
+    var keyword = previous();
+    var value = check(SEMICOLON) ? null : expression();
+
+    consume(SEMICOLON, "Expect ';' after return value.");
+    return Return(keyword, value);
   }
 
   Stmt varDeclaration() {
