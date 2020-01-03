@@ -22,10 +22,25 @@ class Parser {
   }
 
   Stmt declaration() {
+    if (match(CLASS)) return classDeclaration();
     if (match(FUN)) return function("function");
     if (match(VAR)) return varDeclaration();
 
     return statement();
+  }
+
+  Stmt classDeclaration() {
+    var name = consume(IDENTIFIER, "Expect class name.");
+    consume(LEFT_BRACE, "Expect '{' before class body.");
+
+    var methods = <Function>[];
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      methods.add(function("method"));
+    }
+
+    consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+    return Class(name, methods);
   }
 
   Stmt statement() {

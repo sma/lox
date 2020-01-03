@@ -1,6 +1,7 @@
 import 'ast.dart';
 import 'environment.dart';
 import 'lox_callable.dart';
+import 'lox_class.dart';
 import 'lox_function.dart';
 import 'lox_return.dart';
 import 'runtime_error.dart';
@@ -65,13 +66,13 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   Object lookUpVariable(Token name, Expr expr) {
-    var distance = locals[expr];                
-    if (distance != null) {                             
-      return environment.getAt(distance, name.lexeme);  
-    } else {                                            
-      return globals.get(name);                         
-    }                                                   
-  }                   
+    var distance = locals[expr];
+    if (distance != null) {
+      return environment.getAt(distance, name.lexeme);
+    } else {
+      return globals.get(name);
+    }
+  }
 
   double checkNumberOperand(Token operator, Object operand) {
     if (operand is double) return operand;
@@ -105,7 +106,13 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   @override
   void visitBlockStmt(Block stmt) {
     executeBlock(stmt.statements, Environment(environment));
-    return null;
+  }
+
+  @override
+  void visitClassStmt(Class stmt) {
+    environment.define(stmt.name.lexeme, null);
+    var klass = LoxClass(stmt.name.lexeme);
+    environment.assign(stmt.name, klass);
   }
 
   void executeBlock(List<Stmt> statements, Environment environment) {
@@ -176,12 +183,12 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   Object visitAssignExpr(Assign expr) {
     var value = evaluate(expr.value);
 
-    var distance = locals[expr];               
-    if (distance != null) {                            
+    var distance = locals[expr];
+    if (distance != null) {
       environment.assignAt(distance, expr.name, value);
-    } else {                                           
-      globals.assign(expr.name, value);                
-    }              
+    } else {
+      globals.assign(expr.name, value);
+    }
     return value;
   }
 

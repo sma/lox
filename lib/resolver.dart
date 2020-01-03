@@ -80,6 +80,12 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitClassStmt(Class stmt) {
+    declare(stmt.name);
+    define(stmt.name);
+  }
+
+  @override
   void visitExpressionStmt(Expression stmt) {
     resolveE(stmt.expression);
   }
