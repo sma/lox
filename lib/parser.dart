@@ -23,14 +23,14 @@ class Parser {
 
   Stmt declaration() {
     if (match(CLASS)) return classDeclaration();
-    if (match(FUN)) return function("function");
+    if (match(FUN)) return function('function');
     if (match(VAR)) return varDeclaration();
 
     return statement();
   }
 
   Stmt classDeclaration() {
-    var name = consume(IDENTIFIER, "Expect class name.");
+    var name = consume(IDENTIFIER, 'Expect class name.');
 
     Variable superclass;
     if (match(LESS)) {
@@ -42,7 +42,7 @@ class Parser {
 
     var methods = <Function>[];
     while (!check(RIGHT_BRACE) && !isAtEnd()) {
-      methods.add(function("method"));
+      methods.add(function('method'));
     }
 
     consume(RIGHT_BRACE, "Expect '}' after class body.");
@@ -128,7 +128,7 @@ class Parser {
   }
 
   Stmt varDeclaration() {
-    var name = consume(IDENTIFIER, "Expect variable name.");
+    var name = consume(IDENTIFIER, 'Expect variable name.');
 
     Expr initializer;
     if (match(EQUAL)) {
@@ -155,21 +155,21 @@ class Parser {
   }
 
   Function function(String kind) {
-    var name = consume(IDENTIFIER, "Expect " + kind + " name.");
-    consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+    var name = consume(IDENTIFIER, 'Expect $kind name.');
+    consume(LEFT_PAREN, "Expect '(' after $kind name.");
     var parameters = <Token>[];
     if (!check(RIGHT_PAREN)) {
       do {
         if (parameters.length >= 255) {
-          error(peek(), "Cannot have more than 255 parameters.");
+          error(peek(), 'Cannot have more than 255 parameters.');
         }
 
-        parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+        parameters.add(consume(IDENTIFIER, 'Expect parameter name.'));
       } while (match(COMMA));
     }
     consume(RIGHT_PAREN, "Expect ')' after parameters.");
 
-    consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+    consume(LEFT_BRACE, "Expect '{' before $kind body.");
     var body = block();
     return Function(name, parameters, body);
   }
@@ -199,7 +199,7 @@ class Parser {
         return Set(expr.object, expr.name, value);
       }
 
-      error(equals, "Invalid assignment target.");
+      error(equals, 'Invalid assignment target.');
     }
 
     return expr;
@@ -309,7 +309,7 @@ class Parser {
     if (!check(RIGHT_PAREN)) {
       do {
         if (arguments.length >= 255) {
-          error(peek(), "Cannot have more than 255 arguments.");
+          error(peek(), 'Cannot have more than 255 arguments.');
         }
         arguments.add(expression());
       } while (match(COMMA));
@@ -348,7 +348,7 @@ class Parser {
       return Grouping(expr);
     }
 
-    throw error(peek(), "Expect expression.");
+    throw error(peek(), 'Expect expression.');
   }
 
   bool match([TokenType t1, TokenType t2, TokenType t3, TokenType t4]) {

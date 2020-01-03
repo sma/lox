@@ -95,11 +95,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       resolveE(stmt.superclass);
 
       beginScope();
-      scopes.last["super"] = true;
+      scopes.last['super'] = true;
     }
 
     beginScope();
-    scopes.last["this"] = true;
+    scopes.last['this'] = true;
 
     for (var method in stmt.methods) {
       var declaration = method.name.lexeme == 'init' ? FunctionType.INITIALIZER : FunctionType.METHOD;

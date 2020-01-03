@@ -16,7 +16,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   Interpreter() {
     globals.define(
-      "clock",
+      'clock',
       LoxCallable(0, (interpreter, arguments) {
         return DateTime.now().millisecondsSinceEpoch / 1000;
       }),
@@ -51,16 +51,16 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       object.set(expr.name, value);
       return value;
     }
-    throw RuntimeError(expr.name, "Only instances have fields.");
+    throw RuntimeError(expr.name, 'Only instances have fields.');
   }
 
   @override
   Object visitSuperExpr(Super expr) {
     var distance = locals[expr];
-    var superclass = environment.getAt(distance, "super") as LoxClass;
+    var superclass = environment.getAt(distance, 'super') as LoxClass;
 
     // "this" is always one level nearer than "super"'s environment.
-    var object = environment.getAt(distance - 1, "this") as LoxInstance;
+    var object = environment.getAt(distance - 1, 'this') as LoxInstance;
 
     var method = superclass.findMethod(expr.method.lexeme);
 
@@ -111,13 +111,13 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   double checkNumberOperand(Token operator, Object operand) {
     if (operand is double) return operand;
-    throw RuntimeError(operator, "Operand must be a number.");
+    throw RuntimeError(operator, 'Operand must be a number.');
   }
 
   void checkNumberOperands(Token operator, Object left, Object right) {
     if (left is double && right is double) return;
 
-    throw RuntimeError(operator, "Operands must be numbers.");
+    throw RuntimeError(operator, 'Operands must be numbers.');
   }
 
   bool isTruthy(Object object) {
@@ -279,7 +279,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
         if (left is String && right is String) {
           return left + right;
         }
-        throw RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
+        throw RuntimeError(expr.operator, 'Operands must be two numbers or two strings.');
       case SLASH:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) / (right as double);
@@ -321,18 +321,18 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       return object.get(expr.name);
     }
 
-    throw RuntimeError(expr.name, "Only instances have properties.");
+    throw RuntimeError(expr.name, 'Only instances have properties.');
   }
 
   bool isEqual(Object a, Object b) => a == b;
 
   String stringify(Object object) {
-    if (object == null) return "nil";
+    if (object == null) return 'nil';
 
     // Hack. Work around Dart adding ".0" to integer-valued doubles.
     if (object is double) {
       var text = object.toString();
-      if (text.endsWith(".0")) {
+      if (text.endsWith('.0')) {
         text = text.substring(0, text.length - 2);
       }
       return text;

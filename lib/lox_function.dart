@@ -14,7 +14,7 @@ class LoxFunction implements LoxCallable {
 
   LoxFunction bind(LoxInstance instance) {
     var environment = Environment(closure);
-    environment.define("this", instance);
+    environment.define('this', instance);
     return LoxFunction(declaration, environment, isInitializer);
   }
 

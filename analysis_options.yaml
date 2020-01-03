@@ -2,7 +2,7 @@ include: package:pedantic/analysis_options.yaml
 
 linter:
   rules:
-    prefer_single_quotes: false
+    prefer_single_quotes: true
 
 analyzer:
   errors:
