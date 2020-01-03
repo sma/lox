@@ -1,12 +1,27 @@
 import 'lox_class.dart';
+import 'runtime_error.dart';
+import 'token.dart';
 
 class LoxInstance {
-  final LoxClass klass;
+  final LoxClass _klass;
+  final Map<String, Object> _fields = {};
 
-  LoxInstance(this.klass);
+  LoxInstance(this._klass);
+
+  Object get(Token name) {
+    if (_fields.containsKey(name.lexeme)) {
+      return _fields[name.lexeme];
+    }
+
+    throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
+  }
+
+  void set(Token token, Object value) {
+    _fields[token.lexeme] = value;
+  }
 
   @override
   String toString() {
-    return klass.name + " instance";
+    return _klass.name + " instance";
   }
 }

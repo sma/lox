@@ -188,6 +188,8 @@ class Parser {
       if (expr is Variable) {
         var name = expr.name;
         return Assign(name, value);
+      } else if (expr is Get) {
+        return Set(expr.object, expr.name, value);
       }
 
       error(equals, "Invalid assignment target.");
@@ -284,6 +286,9 @@ class Parser {
     while (true) {
       if (match(LEFT_PAREN)) {
         expr = finishCall(expr);
+      } else if (match(DOT)) {
+        var name = consume(IDENTIFIER, "Expect property name after '.'.");
+        expr = Get(expr, name);
       } else {
         break;
       }

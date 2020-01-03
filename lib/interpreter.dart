@@ -3,6 +3,7 @@ import 'environment.dart';
 import 'lox_callable.dart';
 import 'lox_class.dart';
 import 'lox_function.dart';
+import 'lox_instance.dart';
 import 'lox_return.dart';
 import 'runtime_error.dart';
 import 'token.dart';
@@ -39,6 +40,18 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     }
 
     return evaluate(expr.right);
+  }
+
+  @override
+  Object visitSetExpr(Set expr) {
+    var object = evaluate(expr.object);
+
+    if (object is LoxInstance) {
+      var value = evaluate(expr.value);
+      object.set(expr.name, value);
+      return value;
+    }
+    throw RuntimeError(expr.name, "Only instances have fields.");
   }
 
   @override
@@ -252,6 +265,16 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       return callee.call(this, arguments);
     }
     throw RuntimeError(expr.paren, 'Can only call functions and classes.');
+  }
+
+  @override
+  Object visitGetExpr(Get expr) {
+    var object = evaluate(expr.object);
+    if (object is LoxInstance) {
+      return object.get(expr.name);
+    }
+
+    throw RuntimeError(expr.name, "Only instances have properties.");
   }
 
   bool isEqual(Object a, Object b) => a == b;

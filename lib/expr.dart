@@ -8,9 +8,11 @@ abstract class ExprVisitor<R> {
   R visitAssignExpr(Assign expr);
   R visitBinaryExpr(Binary expr);
   R visitCallExpr(Call expr);
+  R visitGetExpr(Get expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
   R visitLogicalExpr(Logical expr);
+  R visitSetExpr(Set expr);
   R visitUnaryExpr(Unary expr);
   R visitVariableExpr(Variable expr);
 }
@@ -64,6 +66,21 @@ class Call extends Expr {
   final List<Expr> arguments;
 }
 
+class Get extends Expr {
+  Get(
+    this.object,
+    this.name,
+  );
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitGetExpr(this);
+  }
+
+  final Expr object;
+  final Token name;
+}
+
 class Grouping extends Expr {
   Grouping(
     this.expression,
@@ -105,6 +122,23 @@ class Logical extends Expr {
   final Expr left;
   final Token operator;
   final Expr right;
+}
+
+class Set extends Expr {
+  Set(
+    this.object,
+    this.name,
+    this.value,
+  );
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitSetExpr(this);
+  }
+
+  final Expr object;
+  final Token name;
+  final Expr value;
 }
 
 class Unary extends Expr {

@@ -152,6 +152,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitGetExpr(Get expr) {
+    resolveE(expr.object);
+  }
+
+  @override
   void visitGroupingExpr(Grouping expr) {
     resolveE(expr.expression);
   }
@@ -163,6 +168,12 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void visitLogicalExpr(Logical expr) {
     resolveE(expr.left);
     resolveE(expr.right);
+  }
+
+  @override
+  void visitSetExpr(Set expr) {
+    resolveE(expr.value);
+    resolveE(expr.object);
   }
 
   @override
