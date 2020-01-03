@@ -13,6 +13,9 @@ class LoxInstance {
       return _fields[name.lexeme];
     }
 
+    var method = _klass.findMethod(name.lexeme);
+    if (method != null) return method;
+
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
   }
 
@@ -22,6 +25,6 @@ class LoxInstance {
 
   @override
   String toString() {
-    return _klass.name + " instance";
+    return '${_klass.name} instance';
   }
 }

@@ -1,12 +1,21 @@
-import 'package:lox/interpreter.dart';
-import 'package:lox/lox_callable.dart';
-
+import 'interpreter.dart';
+import 'lox_callable.dart';
+import 'lox_function.dart';
 import 'lox_instance.dart';
 
 class LoxClass implements LoxCallable {
   final String name;
+  final Map<String, LoxFunction> _methods;
 
-  LoxClass(this.name);
+  LoxClass(this.name, this._methods);
+
+  LoxFunction findMethod(String name) {
+    if (_methods.containsKey(name)) {
+      return _methods[name];
+    }
+
+    return null;
+  }
 
   @override
   int get arity => 0;
@@ -17,7 +26,5 @@ class LoxClass implements LoxCallable {
   }
 
   @override
-  String toString() {
-    return name;
-  }
+  String toString() => name;
 }

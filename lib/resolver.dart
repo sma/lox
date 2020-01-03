@@ -83,6 +83,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void visitClassStmt(Class stmt) {
     declare(stmt.name);
     define(stmt.name);
+
+    for (var method in stmt.methods) {
+      var declaration = FunctionType.METHOD;
+      resolveFunction(method, declaration);
+    }
   }
 
   @override
@@ -196,4 +201,4 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 }
 
-enum FunctionType { NONE, FUNCTION }
+enum FunctionType { NONE, FUNCTION, METHOD }
