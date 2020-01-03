@@ -87,6 +87,16 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
     declare(stmt.name);
     define(stmt.name);
+    if (stmt.superclass != null) {
+      if (stmt.name.lexeme == stmt.superclass.name.lexeme) {
+        throw RuntimeError(stmt.superclass.name, 'A class cannot inherit from itself.');
+      }
+      currentClass = ClassType.SUBCLASS;
+      resolveE(stmt.superclass);
+
+      beginScope();
+      scopes.last["super"] = true;
+    }
 
     beginScope();
     scopes.last["this"] = true;
@@ -97,6 +107,8 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
 
     endScope();
+
+    if (stmt.superclass != null) endScope();
 
     currentClass = enclosingClass;
   }
@@ -196,6 +208,16 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitSuperExpr(Super expr) {
+    if (currentClass == ClassType.NONE) {
+      throw RuntimeError(expr.keyword, "Cannot use 'super' outside of a class.");
+    } else if (currentClass != ClassType.SUBCLASS) {
+      throw RuntimeError(expr.keyword, "Cannot use 'super' in a class with no superclass.");
+    }
+    resolveLocal(expr, expr.keyword);
+  }
+
+  @override
   void visitThisExpr(This expr) {
     if (currentClass == ClassType.NONE) {
       throw RuntimeError(expr.keyword, "Cannot use 'this' outside of a class.");
@@ -224,6 +246,6 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 }
 
-enum ClassType { NONE, CLASS }
+enum ClassType { NONE, CLASS, SUBCLASS }
 
 enum FunctionType { NONE, FUNCTION, INITIALIZER, METHOD }

@@ -31,6 +31,13 @@ class Parser {
 
   Stmt classDeclaration() {
     var name = consume(IDENTIFIER, "Expect class name.");
+
+    Variable superclass;
+    if (match(LESS)) {
+      consume(IDENTIFIER, 'Expect superclass name');
+      superclass = Variable(previous());
+    }
+
     consume(LEFT_BRACE, "Expect '{' before class body.");
 
     var methods = <Function>[];
@@ -40,7 +47,7 @@ class Parser {
 
     consume(RIGHT_BRACE, "Expect '}' after class body.");
 
-    return Class(name, methods);
+    return Class(name, superclass, methods);
   }
 
   Stmt statement() {
@@ -320,6 +327,13 @@ class Parser {
 
     if (match(NUMBER, STRING)) {
       return Literal(previous().literal);
+    }
+
+    if (match(SUPER)) {
+      var keyword = previous();
+      consume(DOT, "Expect '.' after 'super'.");
+      var method = consume(IDENTIFIER, 'Expect superclass method name.');
+      return Super(keyword, method);
     }
 
     if (match(THIS)) return This(previous());

@@ -32,6 +32,7 @@ class Block extends Stmt {
 class Class extends Stmt {
   Class(
     this.name,
+    this.superclass,
     this.methods,
   );
 
@@ -41,6 +42,7 @@ class Class extends Stmt {
   }
 
   final Token name;
+  final Variable superclass;
   final List<Function> methods;
 }
 

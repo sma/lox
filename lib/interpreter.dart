@@ -55,6 +55,23 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
+  Object visitSuperExpr(Super expr) {
+    var distance = locals[expr];
+    var superclass = environment.getAt(distance, "super") as LoxClass;
+
+    // "this" is always one level nearer than "super"'s environment.
+    var object = environment.getAt(distance - 1, "this") as LoxInstance;
+
+    var method = superclass.findMethod(expr.method.lexeme);
+
+    if (method == null) {
+      throw RuntimeError(expr.method, "Undefined property '${expr.method.lexeme}'.");
+    }
+
+    return method.bind(object);
+  }
+
+  @override
   Object visitThisExpr(This expr) {
     return lookUpVariable(expr.keyword, expr);
   }
@@ -128,7 +145,20 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   void visitClassStmt(Class stmt) {
+    Object superclass;
+    if (stmt.superclass != null) {
+      superclass = evaluate(stmt.superclass);
+      if (superclass is! LoxClass) {
+        throw RuntimeError(stmt.superclass.name, 'Superclass must be a class.');
+      }
+    }
+
     environment.define(stmt.name.lexeme, null);
+
+    if (stmt.superclass != null) {
+      environment = Environment(environment);
+      environment.define('super', superclass);
+    }
 
     var methods = <String, LoxFunction>{};
     for (var method in stmt.methods) {
@@ -136,7 +166,12 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       methods[method.name.lexeme] = function;
     }
 
-    var klass = LoxClass(stmt.name.lexeme, methods);
+    var klass = LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
+
+    if (superclass != null) {
+      environment = environment.enclosing;
+    }
+
     environment.assign(stmt.name, klass);
   }
 
