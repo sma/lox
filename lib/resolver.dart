@@ -6,6 +6,7 @@ import 'token.dart';
 class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   final Interpreter interpreter;
   final List<Map<String, bool>> scopes = [];
+  var currentClass = ClassType.NONE;
   var currentFunction = FunctionType.NONE;
 
   Resolver(this.interpreter);
@@ -81,13 +82,23 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitClassStmt(Class stmt) {
+    var enclosingClass = currentClass;
+    currentClass = ClassType.CLASS;
+
     declare(stmt.name);
     define(stmt.name);
+
+    beginScope();
+    scopes.last["this"] = true;
 
     for (var method in stmt.methods) {
       var declaration = FunctionType.METHOD;
       resolveFunction(method, declaration);
     }
+
+    endScope();
+
+    currentClass = enclosingClass;
   }
 
   @override
@@ -182,6 +193,15 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitThisExpr(This expr) {
+    if (currentClass == ClassType.NONE) {
+      throw RuntimeError(expr.keyword, "Cannot use 'this' outside of a class.");
+    }
+
+    resolveLocal(expr, expr.keyword);
+  }
+
+  @override
   void visitUnaryExpr(Unary expr) {
     resolveE(expr.right);
   }
@@ -200,5 +220,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     resolveE(stmt.expression);
   }
 }
+
+enum ClassType { NONE, CLASS }
 
 enum FunctionType { NONE, FUNCTION, METHOD }

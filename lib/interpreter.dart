@@ -55,6 +55,11 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
+  Object visitThisExpr(This expr) {
+    return lookUpVariable(expr.keyword, expr);
+  }
+
+  @override
   Object visitGroupingExpr(Grouping expr) {
     return evaluate(expr.expression);
   }

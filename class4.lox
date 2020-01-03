@@ -1,0 +1,5 @@
+class C { 
+    m() { print this; }
+} 
+
+C().m();

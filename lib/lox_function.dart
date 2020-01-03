@@ -2,6 +2,7 @@ import 'ast.dart';
 import 'environment.dart';
 import 'interpreter.dart';
 import 'lox_callable.dart';
+import 'lox_instance.dart';
 import 'lox_return.dart';
 
 class LoxFunction implements LoxCallable {
@@ -9,6 +10,12 @@ class LoxFunction implements LoxCallable {
   final Environment closure;
 
   LoxFunction(this.declaration, this.closure);
+
+  LoxFunction bind(LoxInstance instance) {
+    var environment = Environment(closure);
+    environment.define("this", instance);
+    return LoxFunction(declaration, environment);
+  }
 
   @override
   int get arity => declaration.params.length;
