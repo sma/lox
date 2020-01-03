@@ -18,11 +18,14 @@ class LoxClass implements LoxCallable {
   }
 
   @override
-  int get arity => 0;
+  int get arity => findMethod('init')?.arity ?? 0;
 
   @override
   Object call(Interpreter interpreter, List<Object> arguments) {
-    return LoxInstance(this);
+    var instance = LoxInstance(this);
+    var initializer = findMethod('init');
+    initializer?.bind(instance)?.call(interpreter, arguments);
+    return instance;
   }
 
   @override

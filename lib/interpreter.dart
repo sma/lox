@@ -132,7 +132,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
     var methods = <String, LoxFunction>{};
     for (var method in stmt.methods) {
-      var function = LoxFunction(method, environment);
+      var function = LoxFunction(method, environment, method.name.lexeme == 'init');
       methods[method.name.lexeme] = function;
     }
 
@@ -170,7 +170,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   void visitFunctionStmt(Function stmt) {
-    var function = LoxFunction(stmt, environment);
+    var function = LoxFunction(stmt, environment, false);
     environment.define(stmt.name.lexeme, function);
   }
 

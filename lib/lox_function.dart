@@ -8,13 +8,14 @@ import 'lox_return.dart';
 class LoxFunction implements LoxCallable {
   final Function declaration;
   final Environment closure;
+  final bool isInitializer;
 
-  LoxFunction(this.declaration, this.closure);
+  LoxFunction(this.declaration, this.closure, this.isInitializer);
 
   LoxFunction bind(LoxInstance instance) {
     var environment = Environment(closure);
     environment.define("this", instance);
-    return LoxFunction(declaration, environment);
+    return LoxFunction(declaration, environment, isInitializer);
   }
 
   @override
@@ -30,8 +31,11 @@ class LoxFunction implements LoxCallable {
     try {
       interpreter.executeBlock(declaration.body, environment);
     } on LoxReturn catch (returnValue) {
+      if (isInitializer) return closure.getAt(0, 'this');
       return returnValue.value;
     }
+
+    if (isInitializer) return closure.getAt(0, 'this');
     return null;
   }
 

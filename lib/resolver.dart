@@ -92,7 +92,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     scopes.last["this"] = true;
 
     for (var method in stmt.methods) {
-      var declaration = FunctionType.METHOD;
+      var declaration = method.name.lexeme == 'init' ? FunctionType.INITIALIZER : FunctionType.METHOD;
       resolveFunction(method, declaration);
     }
 
@@ -127,6 +127,9 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       throw RuntimeError(stmt.keyword, 'Cannot return from top-level code.');
     }
     if (stmt.value != null) {
+      if (currentFunction == FunctionType.INITIALIZER) {
+        throw RuntimeError(stmt.keyword, 'Cannot return from an initializer.');
+      }
       resolveE(stmt.value);
     }
   }
@@ -223,4 +226,4 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
 enum ClassType { NONE, CLASS }
 
-enum FunctionType { NONE, FUNCTION, METHOD }
+enum FunctionType { NONE, FUNCTION, INITIALIZER, METHOD }
