@@ -35,7 +35,7 @@ class Environment {
     _values[name] = value;
   }
 
-  Environment ancestor(int distance) {
+  Environment _ancestor(int distance) {
     var environment = this;
     for (var i = 0; i < distance; i++) {
       environment = environment.enclosing;
@@ -45,10 +45,10 @@ class Environment {
   }
 
   Object getAt(int distance, String name) {
-    return ancestor(distance)._values[name];
+    return _ancestor(distance)._values[name];
   }
 
   void assignAt(int distance, Token name, Object value) {
-    ancestor(distance)._values[name.lexeme] = value;
+    _ancestor(distance)._values[name.lexeme] = value;
   }
 }

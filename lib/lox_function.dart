@@ -6,39 +6,39 @@ import 'lox_instance.dart';
 import 'lox_return.dart';
 
 class LoxFunction implements LoxCallable {
-  final Function declaration;
-  final Environment closure;
-  final bool isInitializer;
+  final Function _declaration;
+  final Environment _closure;
+  final bool _isInitializer;
 
-  LoxFunction(this.declaration, this.closure, this.isInitializer);
+  LoxFunction(this._declaration, this._closure, this._isInitializer);
 
   LoxFunction bind(LoxInstance instance) {
-    var environment = Environment(closure);
+    var environment = Environment(_closure);
     environment.define('this', instance);
-    return LoxFunction(declaration, environment, isInitializer);
+    return LoxFunction(_declaration, environment, _isInitializer);
   }
 
   @override
-  int get arity => declaration.params.length;
+  int get arity => _declaration.params.length;
 
   @override
   Object call(Interpreter interpreter, List<Object> arguments) {
-    var environment = Environment(closure);
-    for (var i = 0; i < declaration.params.length; i++) {
-      environment.define(declaration.params[i].lexeme, arguments[i]);
+    var environment = Environment(_closure);
+    for (var i = 0; i < _declaration.params.length; i++) {
+      environment.define(_declaration.params[i].lexeme, arguments[i]);
     }
 
     try {
-      interpreter.executeBlock(declaration.body, environment);
+      interpreter.executeBlock(_declaration.body, environment);
     } on LoxReturn catch (returnValue) {
-      if (isInitializer) return closure.getAt(0, 'this');
+      if (_isInitializer) return _closure.getAt(0, 'this');
       return returnValue.value;
     }
 
-    if (isInitializer) return closure.getAt(0, 'this');
+    if (_isInitializer) return _closure.getAt(0, 'this');
     return null;
   }
 
   @override
-  String toString() => '<fn ${declaration.name.lexeme}>';
+  String toString() => '<fn ${_declaration.name.lexeme}>';
 }

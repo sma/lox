@@ -12,7 +12,7 @@ import 'token_type.dart';
 class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   final globals = Environment();
   final locals = <Expr, int>{};
-  Environment environment;
+  Environment _environment;
 
   Interpreter() {
     globals.define(
@@ -21,126 +21,43 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
         return DateTime.now().millisecondsSinceEpoch / 1000;
       }),
     );
-    environment = globals;
+    _environment = globals;
   }
 
-  @override
-  Object visitLiteralExpr(Literal expr) {
-    return expr.value;
-  }
-
-  @override
-  Object visitLogicalExpr(Logical expr) {
-    var left = evaluate(expr.left);
-
-    if (expr.operator.type == TokenType.OR) {
-      if (isTruthy(left)) return left;
-    } else {
-      if (!isTruthy(left)) return left;
+  void interpret(List<Stmt> statements) {
+    for (var statement in statements) {
+      execute(statement);
     }
-
-    return evaluate(expr.right);
-  }
-
-  @override
-  Object visitSetExpr(Set expr) {
-    var object = evaluate(expr.object);
-
-    if (object is LoxInstance) {
-      var value = evaluate(expr.value);
-      object.set(expr.name, value);
-      return value;
-    }
-    throw RuntimeError(expr.name, 'Only instances have fields.');
-  }
-
-  @override
-  Object visitSuperExpr(Super expr) {
-    var distance = locals[expr];
-    var superclass = environment.getAt(distance, 'super') as LoxClass;
-
-    // "this" is always one level nearer than "super"'s environment.
-    var object = environment.getAt(distance - 1, 'this') as LoxInstance;
-
-    var method = superclass.findMethod(expr.method.lexeme);
-
-    if (method == null) {
-      throw RuntimeError(expr.method, "Undefined property '${expr.method.lexeme}'.");
-    }
-
-    return method.bind(object);
-  }
-
-  @override
-  Object visitThisExpr(This expr) {
-    return lookUpVariable(expr.keyword, expr);
-  }
-
-  @override
-  Object visitGroupingExpr(Grouping expr) {
-    return evaluate(expr.expression);
-  }
-
-  @override
-  Object visitUnaryExpr(Unary expr) {
-    var right = evaluate(expr.right);
-
-    switch (expr.operator.type) {
-      case BANG:
-        return !isTruthy(right);
-      case MINUS:
-        return -checkNumberOperand(expr.operator, right);
-      default:
-        return null;
-    }
-  }
-
-  @override
-  Object visitVariableExpr(Variable expr) {
-    return lookUpVariable(expr.name, expr);
-  }
-
-  Object lookUpVariable(Token name, Expr expr) {
-    var distance = locals[expr];
-    if (distance != null) {
-      return environment.getAt(distance, name.lexeme);
-    } else {
-      return globals.get(name);
-    }
-  }
-
-  double checkNumberOperand(Token operator, Object operand) {
-    if (operand is double) return operand;
-    throw RuntimeError(operator, 'Operand must be a number.');
-  }
-
-  void checkNumberOperands(Token operator, Object left, Object right) {
-    if (left is double && right is double) return;
-
-    throw RuntimeError(operator, 'Operands must be numbers.');
-  }
-
-  bool isTruthy(Object object) {
-    if (object == null) return false;
-    if (object is bool) return object;
-    return true;
-  }
-
-  Object evaluate(Expr expr) {
-    return expr.accept(this);
   }
 
   void execute(Stmt stmt) {
     stmt.accept(this);
   }
 
+  Object evaluate(Expr expr) {
+    return expr.accept(this);
+  }
+
   void resolve(Expr expr, int depth) {
     locals[expr] = depth;
   }
 
+  void executeBlock(List<Stmt> statements, Environment environment) {
+    var previous = _environment;
+    try {
+      _environment = environment;
+
+      for (var statement in statements) {
+        execute(statement);
+      }
+    } finally {
+      _environment = previous;
+    }
+  }
+
   @override
   void visitBlockStmt(Block stmt) {
-    executeBlock(stmt.statements, Environment(environment));
+    executeBlock(stmt.statements, Environment(_environment));
   }
 
   @override
@@ -153,39 +70,37 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       }
     }
 
-    environment.define(stmt.name.lexeme, null);
+    _environment.define(stmt.name.lexeme, null);
 
     if (stmt.superclass != null) {
-      environment = Environment(environment);
-      environment.define('super', superclass);
+      _environment = Environment(_environment);
+      _environment.define('super', superclass);
     }
 
     var methods = <String, LoxFunction>{};
     for (var method in stmt.methods) {
-      var function = LoxFunction(method, environment, method.name.lexeme == 'init');
+      var function = LoxFunction(method, _environment, method.name.lexeme == 'init');
       methods[method.name.lexeme] = function;
     }
 
     var klass = LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
 
     if (superclass != null) {
-      environment = environment.enclosing;
+      _environment = _environment.enclosing;
     }
 
-    environment.assign(stmt.name, klass);
+    _environment.assign(stmt.name, klass);
   }
 
-  void executeBlock(List<Stmt> statements, Environment environment) {
-    var previous = this.environment;
-    try {
-      this.environment = environment;
+  @override
+  void visitExpressionStmt(Expression stmt) {
+    evaluate(stmt.expression);
+  }
 
-      for (var statement in statements) {
-        execute(statement);
-      }
-    } finally {
-      this.environment = previous;
-    }
+  @override
+  void visitFunctionStmt(Function stmt) {
+    var function = LoxFunction(stmt, _environment, false);
+    _environment.define(stmt.name.lexeme, function);
   }
 
   @override
@@ -196,17 +111,6 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       execute(stmt.elseBranch);
     }
     return null;
-  }
-
-  @override
-  void visitExpressionStmt(Expression stmt) {
-    evaluate(stmt.expression);
-  }
-
-  @override
-  void visitFunctionStmt(Function stmt) {
-    var function = LoxFunction(stmt, environment, false);
-    environment.define(stmt.name.lexeme, function);
   }
 
   @override
@@ -228,7 +132,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       value = evaluate(stmt.initializer);
     }
 
-    environment.define(stmt.name.lexeme, value);
+    _environment.define(stmt.name.lexeme, value);
   }
 
   @override
@@ -245,7 +149,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
     var distance = locals[expr];
     if (distance != null) {
-      environment.assignAt(distance, expr.name, value);
+      _environment.assignAt(distance, expr.name, value);
     } else {
       globals.assign(expr.name, value);
     }
@@ -324,6 +228,108 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     throw RuntimeError(expr.name, 'Only instances have properties.');
   }
 
+  @override
+  Object visitGroupingExpr(Grouping expr) {
+    return evaluate(expr.expression);
+  }
+
+  @override
+  Object visitLiteralExpr(Literal expr) {
+    return expr.value;
+  }
+
+  @override
+  Object visitLogicalExpr(Logical expr) {
+    var left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
+  }
+
+  @override
+  Object visitSetExpr(Set expr) {
+    var object = evaluate(expr.object);
+
+    if (object is LoxInstance) {
+      var value = evaluate(expr.value);
+      object.set(expr.name, value);
+      return value;
+    }
+    throw RuntimeError(expr.name, 'Only instances have fields.');
+  }
+
+  @override
+  Object visitSuperExpr(Super expr) {
+    var distance = locals[expr];
+    var superclass = _environment.getAt(distance, 'super') as LoxClass;
+
+    // "this" is always one level nearer than "super"'s environment.
+    var object = _environment.getAt(distance - 1, 'this') as LoxInstance;
+
+    var method = superclass.findMethod(expr.method.lexeme);
+
+    if (method == null) {
+      throw RuntimeError(expr.method, "Undefined property '${expr.method.lexeme}'.");
+    }
+
+    return method.bind(object);
+  }
+
+  @override
+  Object visitThisExpr(This expr) {
+    return lookUpVariable(expr.keyword, expr);
+  }
+
+  @override
+  Object visitUnaryExpr(Unary expr) {
+    var right = evaluate(expr.right);
+
+    switch (expr.operator.type) {
+      case BANG:
+        return !isTruthy(right);
+      case MINUS:
+        return -checkNumberOperand(expr.operator, right);
+      default:
+        return null;
+    }
+  }
+
+  @override
+  Object visitVariableExpr(Variable expr) {
+    return lookUpVariable(expr.name, expr);
+  }
+
+  Object lookUpVariable(Token name, Expr expr) {
+    var distance = locals[expr];
+    if (distance != null) {
+      return _environment.getAt(distance, name.lexeme);
+    } else {
+      return globals.get(name);
+    }
+  }
+
+  double checkNumberOperand(Token operator, Object operand) {
+    if (operand is double) return operand;
+    throw RuntimeError(operator, 'Operand must be a number.');
+  }
+
+  void checkNumberOperands(Token operator, Object left, Object right) {
+    if (left is double && right is double) return;
+
+    throw RuntimeError(operator, 'Operands must be numbers.');
+  }
+
+  bool isTruthy(Object object) {
+    if (object == null) return false;
+    if (object is bool) return object;
+    return true;
+  }
+
   bool isEqual(Object a, Object b) => a == b;
 
   String stringify(Object object) {
@@ -339,11 +345,5 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     }
 
     return object.toString();
-  }
-
-  void interpret(List<Stmt> statements) {
-    for (var statement in statements) {
-      execute(statement);
-    }
   }
 }

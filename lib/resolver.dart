@@ -134,6 +134,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitPrintStmt(Print stmt) {
+    resolveE(stmt.expression);
+  }
+
+  @override
   void visitReturnStmt(Return stmt) {
     if (currentFunction == FunctionType.NONE) {
       throw RuntimeError(stmt.keyword, 'Cannot return from top-level code.');
@@ -238,11 +243,6 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
 
     resolveLocal(expr, expr.name);
-  }
-
-  @override
-  void visitPrintStmt(Print stmt) {
-    resolveE(stmt.expression);
   }
 }
 

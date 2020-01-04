@@ -2,6 +2,7 @@ import 'interpreter.dart';
 
 abstract class LoxCallable {
   int get arity;
+
   Object call(Interpreter interpreter, List<Object> arguments);
 
   factory LoxCallable(int arity, Object Function(Interpreter interpreter, List<Object> arguments) fn) {
