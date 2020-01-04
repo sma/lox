@@ -14,6 +14,6 @@ class RuntimeError implements Exception {
       }
       return '[line ${token.line}] Error at end: $message';
     }
-    return '[line ${token.line}] Error at "${token.lexeme}": $message';
+    return "[line ${token.line}] Error at '${token.lexeme}': $message";
   }
 }

@@ -34,7 +34,7 @@ class Parser {
 
     Variable superclass;
     if (match(LESS)) {
-      consume(IDENTIFIER, 'Expect superclass name');
+      consume(IDENTIFIER, 'Expect superclass name.');
       superclass = Variable(previous());
     }
 

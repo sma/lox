@@ -145,7 +145,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
     if (stmt.value != null) {
       if (currentFunction == FunctionType.INITIALIZER) {
-        throw RuntimeError(stmt.keyword, 'Cannot return from an initializer.');
+        throw RuntimeError(stmt.keyword, 'Cannot return a value from an initializer.');
       }
       resolveE(stmt.value);
     }
@@ -238,7 +238,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitVariableExpr(Variable expr) {
-    if (scopes.isNotEmpty && !scopes.last[expr.name.lexeme]) {
+    if (scopes.isNotEmpty && scopes.last[expr.name.lexeme] == false) {
       throw RuntimeError(expr.name, 'Cannot read local variable in its own initializer.');
     }
 
