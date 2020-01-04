@@ -161,7 +161,7 @@ class Parser {
     if (!check(RIGHT_PAREN)) {
       do {
         if (parameters.length >= 255) {
-          error(peek(), 'Cannot have more than 255 parameters.');
+          throw error(peek(), 'Cannot have more than 255 parameters.');
         }
 
         parameters.add(consume(IDENTIFIER, 'Expect parameter name.'));
@@ -199,7 +199,7 @@ class Parser {
         return Set(expr.object, expr.name, value);
       }
 
-      error(equals, 'Invalid assignment target.');
+      throw error(equals, 'Invalid assignment target.');
     }
 
     return expr;
@@ -309,7 +309,7 @@ class Parser {
     if (!check(RIGHT_PAREN)) {
       do {
         if (arguments.length >= 255) {
-          error(peek(), 'Cannot have more than 255 arguments.');
+          throw error(peek(), 'Cannot have more than 255 arguments.');
         }
         arguments.add(expression());
       } while (match(COMMA));
