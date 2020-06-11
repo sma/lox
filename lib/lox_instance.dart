@@ -4,11 +4,11 @@ import 'token.dart';
 
 class LoxInstance {
   final LoxClass _klass;
-  final Map<String, Object> _fields = {};
+  final Map<String, Object?> _fields = {};
 
   LoxInstance(this._klass);
 
-  Object get(Token name) {
+  Object? get(Token name) {
     if (_fields.containsKey(name.lexeme)) {
       return _fields[name.lexeme];
     }
@@ -19,7 +19,7 @@ class LoxInstance {
     throw RuntimeError(name, "Undefined property '${name.lexeme}'.");
   }
 
-  void set(Token token, Object value) {
+  void set(Token token, Object? value) {
     _fields[token.lexeme] = value;
   }
 

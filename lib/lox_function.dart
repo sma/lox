@@ -22,7 +22,7 @@ class LoxFunction implements LoxCallable {
   int get arity => _declaration.params.length;
 
   @override
-  Object call(Interpreter interpreter, List<Object> arguments) {
+  Object? call(Interpreter interpreter, List<Object?> arguments) {
     var environment = Environment(_closure);
     for (var i = 0; i < _declaration.params.length; i++) {
       environment.define(_declaration.params[i].lexeme, arguments[i]);

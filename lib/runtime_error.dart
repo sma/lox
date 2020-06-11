@@ -9,7 +9,7 @@ class RuntimeError implements Exception {
   @override
   String toString() {
     if (token.type == TokenType.EOF) {
-      if (token.lexeme == null) {
+      if (token.lexeme == '') {
         return '[line ${token.line}] Error: $message';
       }
       return '[line ${token.line}] Error at end: $message';

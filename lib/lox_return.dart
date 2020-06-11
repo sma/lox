@@ -1,5 +1,5 @@
 class LoxReturn {
-  final Object value;
+  final Object? value;
 
   LoxReturn(this.value);
 }

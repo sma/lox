@@ -87,12 +87,13 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
     declare(stmt.name);
     define(stmt.name);
-    if (stmt.superclass != null) {
-      if (stmt.name.lexeme == stmt.superclass.name.lexeme) {
-        throw RuntimeError(stmt.superclass.name, 'A class cannot inherit from itself.');
+    var superclass = stmt.superclass;
+    if (superclass is Variable) {
+      if (stmt.name.lexeme == superclass.name.lexeme) {
+        throw RuntimeError(superclass.name, 'A class cannot inherit from itself.');
       }
       currentClass = ClassType.SUBCLASS;
-      resolveE(stmt.superclass);
+      resolveE(superclass);
 
       beginScope();
       scopes.last['super'] = true;
@@ -130,7 +131,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void visitIfStmt(If stmt) {
     resolveE(stmt.condition);
     resolveS(stmt.thenBranch);
-    if (stmt.elseBranch != null) resolveS(stmt.elseBranch);
+    if (stmt.elseBranch != null) resolveS(stmt.elseBranch!);
   }
 
   @override
@@ -147,7 +148,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       if (currentFunction == FunctionType.INITIALIZER) {
         throw RuntimeError(stmt.keyword, 'Cannot return a value from an initializer.');
       }
-      resolveE(stmt.value);
+      resolveE(stmt.value!);
     }
   }
 
@@ -155,7 +156,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void visitVarStmt(Var stmt) {
     declare(stmt.name);
     if (stmt.initializer != null) {
-      resolveE(stmt.initializer);
+      resolveE(stmt.initializer!);
     }
     define(stmt.name);
   }

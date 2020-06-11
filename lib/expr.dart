@@ -106,7 +106,7 @@ class Literal extends Expr {
     return visitor.visitLiteralExpr(this);
   }
 
-  final Object value;
+  final Object? value;
 }
 
 class Logical extends Expr {

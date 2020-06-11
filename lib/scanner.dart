@@ -144,7 +144,7 @@ class Scanner {
     // Unterminated string.
     if (_isAtEnd) {
       throw RuntimeError(
-        Token(TokenType.EOF, null, null, _line),
+        Token(TokenType.EOF, '', null, _line),
         'Unterminated string.',
       );
     }
@@ -193,7 +193,7 @@ class Scanner {
     return _source[_current++];
   }
 
-  void _addToken(TokenType type, [Object literal]) {
+  void _addToken(TokenType type, [Object? literal]) {
     var text = _source.substring(_start, _current);
     _tokens.add(Token(type, text, literal, _line));
   }

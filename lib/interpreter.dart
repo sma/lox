@@ -9,10 +9,10 @@ import 'runtime_error.dart';
 import 'token.dart';
 import 'token_type.dart';
 
-class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
+class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   final globals = Environment();
   final locals = <Expr, int>{};
-  Environment _environment;
+  late Environment _environment;
 
   Interpreter() {
     globals.define(
@@ -34,7 +34,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     stmt.accept(this);
   }
 
-  Object evaluate(Expr expr) {
+  Object? evaluate(Expr expr) {
     return expr.accept(this);
   }
 
@@ -62,11 +62,11 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   void visitClassStmt(Class stmt) {
-    Object superclass;
+    Object? superclass;
     if (stmt.superclass != null) {
-      superclass = evaluate(stmt.superclass);
+      superclass = evaluate(stmt.superclass!);
       if (superclass is! LoxClass) {
-        throw RuntimeError(stmt.superclass.name, 'Superclass must be a class.');
+        throw RuntimeError(stmt.superclass!.name, 'Superclass must be a class.');
       }
     }
 
@@ -83,10 +83,10 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
       methods[method.name.lexeme] = function;
     }
 
-    var klass = LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
+    var klass = LoxClass(stmt.name.lexeme, superclass as LoxClass?, methods);
 
     if (superclass != null) {
-      _environment = _environment.enclosing;
+      _environment = _environment.enclosing!;
     }
 
     _environment.assign(stmt.name, klass);
@@ -108,7 +108,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     if (isTruthy(evaluate(stmt.condition))) {
       execute(stmt.thenBranch);
     } else if (stmt.elseBranch != null) {
-      execute(stmt.elseBranch);
+      execute(stmt.elseBranch!);
     }
     return null;
   }
@@ -121,15 +121,15 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
 
   @override
   void visitReturnStmt(Return stmt) {
-    var value = stmt.value != null ? evaluate(stmt.value) : null;
+    var value = stmt.value != null ? evaluate(stmt.value!) : null;
     throw LoxReturn(value);
   }
 
   @override
   void visitVarStmt(Var stmt) {
-    Object value;
+    Object? value;
     if (stmt.initializer != null) {
-      value = evaluate(stmt.initializer);
+      value = evaluate(stmt.initializer!);
     }
 
     _environment.define(stmt.name.lexeme, value);
@@ -144,7 +144,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitAssignExpr(Assign expr) {
+  Object? visitAssignExpr(Assign expr) {
     var value = evaluate(expr.value);
 
     var distance = locals[expr];
@@ -157,7 +157,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitBinaryExpr(Binary expr) {
+  Object? visitBinaryExpr(Binary expr) {
     var left = evaluate(expr.left);
     var right = evaluate(expr.right);
     switch (expr.operator.type) {
@@ -200,10 +200,10 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitCallExpr(Call expr) {
+  Object? visitCallExpr(Call expr) {
     var callee = evaluate(expr.callee);
     if (callee is LoxCallable) {
-      var arguments = <Object>[];
+      var arguments = <Object?>[];
       for (var argument in expr.arguments) {
         arguments.add(evaluate(argument));
       }
@@ -219,7 +219,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitGetExpr(Get expr) {
+  Object? visitGetExpr(Get expr) {
     var object = evaluate(expr.object);
     if (object is LoxInstance) {
       return object.get(expr.name);
@@ -229,17 +229,17 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitGroupingExpr(Grouping expr) {
+  Object? visitGroupingExpr(Grouping expr) {
     return evaluate(expr.expression);
   }
 
   @override
-  Object visitLiteralExpr(Literal expr) {
+  Object? visitLiteralExpr(Literal expr) {
     return expr.value;
   }
 
   @override
-  Object visitLogicalExpr(Logical expr) {
+  Object? visitLogicalExpr(Logical expr) {
     var left = evaluate(expr.left);
 
     if (expr.operator.type == TokenType.OR) {
@@ -252,7 +252,7 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitSetExpr(Set expr) {
+  Object? visitSetExpr(Set expr) {
     var object = evaluate(expr.object);
 
     if (object is LoxInstance) {
@@ -264,8 +264,8 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitSuperExpr(Super expr) {
-    var distance = locals[expr];
+  Object? visitSuperExpr(Super expr) {
+    var distance = locals[expr]!;
     var superclass = _environment.getAt(distance, 'super') as LoxClass;
 
     // "this" is always one level nearer than "super"'s environment.
@@ -281,12 +281,12 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitThisExpr(This expr) {
+  Object? visitThisExpr(This expr) {
     return lookUpVariable(expr.keyword, expr);
   }
 
   @override
-  Object visitUnaryExpr(Unary expr) {
+  Object? visitUnaryExpr(Unary expr) {
     var right = evaluate(expr.right);
 
     switch (expr.operator.type) {
@@ -300,11 +300,11 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
   }
 
   @override
-  Object visitVariableExpr(Variable expr) {
+  Object? visitVariableExpr(Variable expr) {
     return lookUpVariable(expr.name, expr);
   }
 
-  Object lookUpVariable(Token name, Expr expr) {
+  Object? lookUpVariable(Token name, Expr expr) {
     var distance = locals[expr];
     if (distance != null) {
       return _environment.getAt(distance, name.lexeme);
@@ -313,26 +313,26 @@ class Interpreter implements ExprVisitor<Object>, StmtVisitor<void> {
     }
   }
 
-  double checkNumberOperand(Token operator, Object operand) {
+  double checkNumberOperand(Token operator, Object? operand) {
     if (operand is double) return operand;
     throw RuntimeError(operator, 'Operand must be a number.');
   }
 
-  void checkNumberOperands(Token operator, Object left, Object right) {
+  void checkNumberOperands(Token operator, Object? left, Object? right) {
     if (left is double && right is double) return;
 
     throw RuntimeError(operator, 'Operands must be numbers.');
   }
 
-  bool isTruthy(Object object) {
+  bool isTruthy(Object? object) {
     if (object == null) return false;
     if (object is bool) return object;
     return true;
   }
 
-  bool isEqual(Object a, Object b) => a == b;
+  bool isEqual(Object? a, Object? b) => a == b;
 
-  String stringify(Object object) {
+  String stringify(Object? object) {
     if (object == null) return 'nil';
 
     // Hack. Work around Dart adding ".0" to integer-valued doubles.

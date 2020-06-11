@@ -42,7 +42,7 @@ class Class extends Stmt {
   }
 
   final Token name;
-  final Variable superclass;
+  final Variable? superclass;
   final List<Function> methods;
 }
 
@@ -90,7 +90,7 @@ class If extends Stmt {
 
   final Expr condition;
   final Stmt thenBranch;
-  final Stmt elseBranch;
+  final Stmt? elseBranch;
 }
 
 class Print extends Stmt {
@@ -118,7 +118,7 @@ class Return extends Stmt {
   }
 
   final Token keyword;
-  final Expr value;
+  final Expr? value;
 }
 
 class Var extends Stmt {
@@ -133,7 +133,7 @@ class Var extends Stmt {
   }
 
   final Token name;
-  final Expr initializer;
+  final Expr? initializer;
 }
 
 class While extends Stmt {

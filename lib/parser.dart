@@ -32,7 +32,7 @@ class Parser {
   Stmt classDeclaration() {
     var name = consume(IDENTIFIER, 'Expect class name.');
 
-    Variable superclass;
+    Variable? superclass;
     if (match(LESS)) {
       consume(IDENTIFIER, 'Expect superclass name.');
       superclass = Variable(previous());
@@ -64,7 +64,7 @@ class Parser {
   Stmt forStatement() {
     consume(LEFT_PAREN, "Expect '(' after 'for'.");
 
-    Stmt initializer;
+    Stmt? initializer;
     if (match(SEMICOLON)) {
       initializer = null;
     } else if (match(VAR)) {
@@ -73,13 +73,13 @@ class Parser {
       initializer = expressionStatement();
     }
 
-    Expr condition;
+    Expr? condition;
     if (!check(SEMICOLON)) {
       condition = expression();
     }
     consume(SEMICOLON, "Expect ';' after loop condition.");
 
-    Expr increment;
+    Expr? increment;
     if (!check(RIGHT_PAREN)) {
       increment = expression();
     }
@@ -130,7 +130,7 @@ class Parser {
   Stmt varDeclaration() {
     var name = consume(IDENTIFIER, 'Expect variable name.');
 
-    Expr initializer;
+    Expr? initializer;
     if (match(EQUAL)) {
       initializer = expression();
     }
@@ -351,7 +351,7 @@ class Parser {
     throw error(peek(), 'Expect expression.');
   }
 
-  bool match([TokenType t1, TokenType t2, TokenType t3, TokenType t4]) {
+  bool match([TokenType? t1, TokenType? t2, TokenType? t3, TokenType? t4]) {
     for (var type in [t1, t2, t3, t4].whereType<TokenType>()) {
       if (check(type)) {
         advance();
