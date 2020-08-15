@@ -8,3 +8,7 @@ When Bob started his book, Java might have been a good choice but time flies and
 I made roughly one commit per chapter, so in theory you can follow along by checking out the code commit by commit. I tried to stay as close as possible to the [Java source](https://github.com/munificent/craftinginterpreters) even if this means that the result isn't ideomatic. Still, the result is a bit shorter and IMHO more distinct.
 
 Have fun.
+
+## Note
+
+I converted this project to [NNBD](https://dart.dev/null-safety), so it requires Dart 2.10 or better. Run the application with `dart --enable-experiment=non-nullable bin/main.dart`.
