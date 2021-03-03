@@ -76,7 +76,7 @@ void defineVisitor(IOSink writer, String baseName, List<String> types) {
 
   for (var type in types) {
     var typeName = type.split(':')[0].trim();
-    writer.writeln('  R visit${typeName}${baseName}($typeName ${baseName.toLowerCase()});');
+    writer.writeln('  R visit$typeName$baseName($typeName ${baseName.toLowerCase()});');
   }
 
   writer.writeln('}');
