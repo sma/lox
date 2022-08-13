@@ -11,4 +11,4 @@ Have fun.
 
 ## Note
 
-I converted this project to [NNBD](https://dart.dev/null-safety), so it requires Dart 2.10 or better. Run the application with `dart --enable-experiment=non-nullable bin/main.dart`.
+I converted this project to [null safety](https://dart.dev/null-safety), so it requires Dart 2.12 or better. Run the application with `dart bin/main.dart`.

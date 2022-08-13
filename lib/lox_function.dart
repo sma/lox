@@ -6,7 +6,7 @@ import 'lox_instance.dart';
 import 'lox_return.dart';
 
 class LoxFunction implements LoxCallable {
-  final Function _declaration;
+  final Func _declaration;
   final Environment _closure;
   final bool _isInitializer;
 

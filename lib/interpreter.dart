@@ -7,7 +7,6 @@ import 'lox_instance.dart';
 import 'lox_return.dart';
 import 'runtime_error.dart';
 import 'token.dart';
-import 'token_type.dart';
 
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   final globals = Environment();
@@ -66,7 +65,8 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     if (stmt.superclass != null) {
       superclass = evaluate(stmt.superclass!);
       if (superclass is! LoxClass) {
-        throw RuntimeError(stmt.superclass!.name, 'Superclass must be a class.');
+        throw RuntimeError(
+            stmt.superclass!.name, 'Superclass must be a class.');
       }
     }
 
@@ -79,7 +79,8 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
     var methods = <String, LoxFunction>{};
     for (var method in stmt.methods) {
-      var function = LoxFunction(method, _environment, method.name.lexeme == 'init');
+      var function =
+          LoxFunction(method, _environment, method.name.lexeme == 'init');
       methods[method.name.lexeme] = function;
     }
 
@@ -98,7 +99,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   }
 
   @override
-  void visitFunctionStmt(Function stmt) {
+  void visitFuncStmt(Func stmt) {
     var function = LoxFunction(stmt, _environment, false);
     _environment.define(stmt.name.lexeme, function);
   }
@@ -110,7 +111,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     } else if (stmt.elseBranch != null) {
       execute(stmt.elseBranch!);
     }
-    return null;
+    return;
   }
 
   @override
@@ -140,7 +141,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     while (isTruthy(evaluate(stmt.condition))) {
       execute(stmt.body);
     }
-    return null;
+    return;
   }
 
   @override
@@ -183,7 +184,8 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
         if (left is String && right is String) {
           return left + right;
         }
-        throw RuntimeError(expr.operator, 'Operands must be two numbers or two strings.');
+        throw RuntimeError(
+            expr.operator, 'Operands must be two numbers or two strings.');
       case SLASH:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) / (right as double);
@@ -274,7 +276,8 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     var method = superclass.findMethod(expr.method.lexeme);
 
     if (method == null) {
-      throw RuntimeError(expr.method, "Undefined property '${expr.method.lexeme}'.");
+      throw RuntimeError(
+          expr.method, "Undefined property '${expr.method.lexeme}'.");
     }
 
     return method.bind(object);
