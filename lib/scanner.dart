@@ -132,8 +132,7 @@ class Scanner {
       }
     }
 
-    _addToken(
-        TokenType.NUMBER, double.parse(_source.substring(_start, _current)));
+    _addToken(TokenType.NUMBER, double.parse(_source.substring(_start, _current)));
   }
 
   void _string() {

@@ -11,4 +11,14 @@ Have fun.
 
 ## Note
 
-I converted this project to [null safety](https://dart.dev/null-safety), so it requires Dart 2.12 or better. Run the application with `dart bin/main.dart`.
+To recreate `ast.dart`, `expr.dart`, and `stmt.dart`, run
+
+    dart run bin/generate_ast.dart lib
+
+To launch the Lox REPL, run
+
+    dart run bin/main.dart
+
+To run the example `*.lox` files, run
+
+    for i in *.lox; do dart run bin/main.dart $i; done

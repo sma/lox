@@ -53,8 +53,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void declare(Token name) {
     if (scopes.isEmpty) return;
     if (scopes.last.containsKey(name.lexeme)) {
-      throw RuntimeError(
-          name, 'Variable with this name already declared in this scope.');
+      throw RuntimeError(name, 'Variable with this name already declared in this scope.');
     }
 
     scopes.last[name.lexeme] = false;
@@ -93,8 +92,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     var superclass = stmt.superclass;
     if (superclass is Variable) {
       if (stmt.name.lexeme == superclass.name.lexeme) {
-        throw RuntimeError(
-            superclass.name, 'A class cannot inherit from itself.');
+        throw RuntimeError(superclass.name, 'A class cannot inherit from itself.');
       }
       currentClass = ClassType.SUBCLASS;
       resolveE(superclass);
@@ -107,9 +105,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     scopes.last['this'] = true;
 
     for (var method in stmt.methods) {
-      var declaration = method.name.lexeme == 'init'
-          ? FunctionType.INITIALIZER
-          : FunctionType.METHOD;
+      var declaration = method.name.lexeme == 'init' ? FunctionType.INITIALIZER : FunctionType.METHOD;
       resolveFunction(method, declaration);
     }
 
@@ -152,8 +148,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
     if (stmt.value != null) {
       if (currentFunction == FunctionType.INITIALIZER) {
-        throw RuntimeError(
-            stmt.keyword, 'Cannot return a value from an initializer.');
+        throw RuntimeError(stmt.keyword, 'Cannot return a value from an initializer.');
       }
       resolveE(stmt.value!);
     }
@@ -223,11 +218,9 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   @override
   void visitSuperExpr(Super expr) {
     if (currentClass == ClassType.NONE) {
-      throw RuntimeError(
-          expr.keyword, "Cannot use 'super' outside of a class.");
+      throw RuntimeError(expr.keyword, "Cannot use 'super' outside of a class.");
     } else if (currentClass != ClassType.SUBCLASS) {
-      throw RuntimeError(
-          expr.keyword, "Cannot use 'super' in a class with no superclass.");
+      throw RuntimeError(expr.keyword, "Cannot use 'super' in a class with no superclass.");
     }
     resolveLocal(expr, expr.keyword);
   }
@@ -249,8 +242,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   @override
   void visitVariableExpr(Variable expr) {
     if (scopes.isNotEmpty && scopes.last[expr.name.lexeme] == false) {
-      throw RuntimeError(
-          expr.name, 'Cannot read local variable in its own initializer.');
+      throw RuntimeError(expr.name, 'Cannot read local variable in its own initializer.');
     }
 
     resolveLocal(expr, expr.name);

@@ -76,15 +76,13 @@ void defineVisitor(IOSink writer, String baseName, List<String> types) {
 
   for (var type in types) {
     var typeName = type.split(':')[0].trim();
-    writer.writeln(
-        '  R visit$typeName$baseName($typeName ${baseName.toLowerCase()});');
+    writer.writeln('  R visit$typeName$baseName($typeName ${baseName.toLowerCase()});');
   }
 
   writer.writeln('}');
 }
 
-void defineType(
-    IOSink writer, String baseName, String className, String fieldList) {
+void defineType(IOSink writer, String baseName, String className, String fieldList) {
   writer.writeln();
   writer.writeln('class $className extends $baseName {');
 
@@ -117,7 +115,5 @@ void defineType(
 }
 
 String snakeCase(String s) {
-  return s
-      .replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]}_${m[2]}')
-      .toLowerCase();
+  return s.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]}_${m[2]}').toLowerCase();
 }
