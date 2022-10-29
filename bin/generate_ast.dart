@@ -14,7 +14,7 @@ void main(List<String> args) {
     'Call     : Expr callee, Token paren, List<Expr> arguments',
     'Get      : Expr object, Token name',
     'Grouping : Expr expression',
-    'Literal  : Object value',
+    'Literal  : Object? value',
     'Logical  : Expr left, Token operator, Expr right',
     'Set      : Expr object, Token name, Expr value',
     'Super    : Token keyword, Token method',
@@ -25,13 +25,13 @@ void main(List<String> args) {
 
   defineAst(outputDir, 'Stmt', [
     'Block      : List<Stmt> statements',
-    'Class      : Token name, Variable superclass, List<Function> methods',
+    'Class      : Token name, Variable? superclass, List<Func> methods',
     'Expression : Expr expression',
-    'Function   : Token name, List<Token> params, List<Stmt> body',
-    'If         : Expr condition, Stmt thenBranch, Stmt elseBranch',
+    'Func       : Token name, List<Token> params, List<Stmt> body',
+    'If         : Expr condition, Stmt thenBranch, Stmt? elseBranch',
     'Print      : Expr expression',
-    'Return     : Token keyword, Expr value',
-    'Var        : Token name, Expr initializer',
+    'Return     : Token keyword, Expr? value',
+    'Var        : Token name, Expr? initializer',
     'While      : Expr condition, Stmt body',
   ]);
 
@@ -47,7 +47,7 @@ void main(List<String> args) {
 }
 
 void defineAst(String outputDir, String baseName, List<String> types) {
-  var file = snakeCase(baseName) + '.dart';
+  var file = '${snakeCase(baseName)}.dart';
   files.add(file);
   var writer = File('$outputDir/$file').openWrite();
 
@@ -76,13 +76,15 @@ void defineVisitor(IOSink writer, String baseName, List<String> types) {
 
   for (var type in types) {
     var typeName = type.split(':')[0].trim();
-    writer.writeln('  R visit$typeName$baseName($typeName ${baseName.toLowerCase()});');
+    writer.writeln(
+        '  R visit$typeName$baseName($typeName ${baseName.toLowerCase()});');
   }
 
   writer.writeln('}');
 }
 
-void defineType(IOSink writer, String baseName, String className, String fieldList) {
+void defineType(
+    IOSink writer, String baseName, String className, String fieldList) {
   writer.writeln();
   writer.writeln('class $className extends $baseName {');
 
@@ -115,5 +117,7 @@ void defineType(IOSink writer, String baseName, String className, String fieldLi
 }
 
 String snakeCase(String s) {
-  return s.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]}_${m[2]}').toLowerCase();
+  return s
+      .replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]}_${m[2]}')
+      .toLowerCase();
 }

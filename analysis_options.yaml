@@ -1,10 +1,6 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 
 analyzer:
-  errors:
-    deprecated_function_class_declaration: false
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
-  enable-experiment:
-    - non-nullable

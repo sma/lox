@@ -8,7 +8,7 @@ abstract class StmtVisitor<R> {
   R visitBlockStmt(Block stmt);
   R visitClassStmt(Class stmt);
   R visitExpressionStmt(Expression stmt);
-  R visitFunctionStmt(Function stmt);
+  R visitFuncStmt(Func stmt);
   R visitIfStmt(If stmt);
   R visitPrintStmt(Print stmt);
   R visitReturnStmt(Return stmt);
@@ -43,7 +43,7 @@ class Class extends Stmt {
 
   final Token name;
   final Variable? superclass;
-  final List<Function> methods;
+  final List<Func> methods;
 }
 
 class Expression extends Stmt {
@@ -59,8 +59,8 @@ class Expression extends Stmt {
   final Expr expression;
 }
 
-class Function extends Stmt {
-  Function(
+class Func extends Stmt {
+  Func(
     this.name,
     this.params,
     this.body,
@@ -68,7 +68,7 @@ class Function extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
-    return visitor.visitFunctionStmt(this);
+    return visitor.visitFuncStmt(this);
   }
 
   final Token name;

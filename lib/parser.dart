@@ -40,7 +40,7 @@ class Parser {
 
     consume(LEFT_BRACE, "Expect '{' before class body.");
 
-    var methods = <Function>[];
+    var methods = <Func>[];
     while (!check(RIGHT_BRACE) && !isAtEnd()) {
       methods.add(function('method'));
     }
@@ -154,7 +154,7 @@ class Parser {
     return Expression(expr);
   }
 
-  Function function(String kind) {
+  Func function(String kind) {
     var name = consume(IDENTIFIER, 'Expect $kind name.');
     consume(LEFT_PAREN, "Expect '(' after $kind name.");
     var parameters = <Token>[];
@@ -171,7 +171,7 @@ class Parser {
 
     consume(LEFT_BRACE, "Expect '{' before $kind body.");
     var body = block();
-    return Function(name, parameters, body);
+    return Func(name, parameters, body);
   }
 
   List<Stmt> block() {
