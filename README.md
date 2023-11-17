@@ -17,8 +17,8 @@ To recreate `ast.dart`, `expr.dart`, and `stmt.dart`, run
 
 To launch the Lox REPL, run
 
-    dart run bin/main.dart
+    dart run
 
 To run the example `*.lox` files, run
 
-    for i in *.lox; do dart run bin/main.dart $i; done
+    for i in *.lox; do dart run :lox $i; done
