@@ -51,7 +51,7 @@ void defineAst(String outputDir, String baseName, List<String> types) {
   files.add(file);
   var writer = File('$outputDir/$file').openWrite();
 
-  writer.writeln('part of ast;');
+  writer.writeln("part of 'ast.dart';");
   writer.writeln();
   writer.writeln('abstract class $baseName {');
   // The base accept() method.

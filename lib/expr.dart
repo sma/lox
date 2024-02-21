@@ -1,4 +1,4 @@
-part of ast;
+part of 'ast.dart';
 
 abstract class Expr {
   R accept<R>(ExprVisitor<R> visitor);

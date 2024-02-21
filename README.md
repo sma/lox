@@ -13,12 +13,16 @@ Have fun.
 
 To recreate `ast.dart`, `expr.dart`, and `stmt.dart`, run
 
-    dart run bin/generate_ast.dart lib
+    dart run :generate_ast lib
 
 To launch the Lox REPL, run
 
     dart run
 
-To run the example `*.lox` files, run
+To see a simple example, run
+
+    echo "print(3+4);" | dart run
+
+To run the included example `*.lox` files, run
 
     for i in *.lox; do dart run :lox $i; done
