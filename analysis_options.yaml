@@ -3,6 +3,7 @@ include: package:lints/recommended.yaml
 linter:
   rules:
     prefer_single_quotes: true
+    omit_local_variable_types: true
 
 analyzer:
   language:

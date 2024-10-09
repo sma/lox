@@ -2,6 +2,7 @@ import 'compiler.dart';
 import 'debug.dart';
 import 'chunk.dart';
 import 'printf.dart';
+import 'scanner.dart';
 
 const traceInstructions = true;
 
@@ -17,8 +18,13 @@ class VM {
   double pop() => stack.removeLast();
 
   InterpreterResult interpret(String source) {
-    compile(source);
-    return InterpreterResult.ok;
+    chunk = Chunk();
+    final parser = Parser(Scanner(source), chunk);
+    if (!parser.compile()) {
+      return InterpreterResult.compileError;
+    }
+    ip = 0;
+    return run();
   }
 
   InterpreterResult run() {

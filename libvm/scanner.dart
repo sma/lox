@@ -47,11 +47,16 @@ enum TokenType {
 }
 
 class Token {
-  Token(this.type, this.start, this.line);
+  const Token(this.type, this.start, this.line);
 
   final TokenType type;
   final String start;
   final int line;
+
+  @override
+  String toString() => '${type.name}: "$start" at $line';
+
+  static const none = Token(TokenType.error, '', 0);
 }
 
 class Scanner {

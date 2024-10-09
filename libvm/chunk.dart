@@ -20,8 +20,6 @@ class Chunk {
     lines.add(line);
   }
 
-  void writeOp(OpCode op, int line) => write(op.index, line);
-
   int addConstant(double value) {
     var index = constants.indexOf(value);
     if (index == -1) {
