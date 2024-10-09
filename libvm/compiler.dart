@@ -10,7 +10,7 @@ void compile(String source) {
       line = token.line;
       printf('%04d ', [line]);
     } else {
-      printf("   | ");
+      printf('   | ');
     }
     printf("%10s '%s'\n", [token.type.name, token.start]);
 

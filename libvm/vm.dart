@@ -24,13 +24,13 @@ class VM {
   InterpreterResult run() {
     for (;;) {
       if (traceInstructions) {
-        printf("          ");
+        printf('          ');
         for (var i = 0; i < stack.length; i++) {
-          printf("[ ");
+          printf('[ ');
           printValue(stack[i]);
-          printf(" ]");
+          printf(' ]');
         }
-        printf("\n");
+        printf('\n');
         disassembleInstruction(chunk, ip);
       }
       final instruction = OpCode.values[_readByte()];

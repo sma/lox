@@ -16,7 +16,7 @@ void main(List<String> arguments) {
 
 void repl() {
   for (;;) {
-    printf("> ");
+    printf('> ');
     final line = stdin.readLineSync();
     if (line == null) break;
     vm.interpret(line);
