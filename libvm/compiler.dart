@@ -111,6 +111,11 @@ class Parser {
     emitConstant(Number(double.parse(previous.start)));
   }
 
+  void string() {
+    var chars = previous.start.substring(1, previous.start.length - 1);
+    emitConstant(Obj(chars));
+  }
+
   void unary() {
     var operatorType = previous.type;
 
@@ -213,7 +218,7 @@ class Parser {
     TokenType.less: ParseRule(null, binary, Precedence.comparison),
     TokenType.lessEqual: ParseRule(null, binary, Precedence.comparison),
     TokenType.identifier: ParseRule(null, null, Precedence.none),
-    TokenType.string: ParseRule(null, null, Precedence.none),
+    TokenType.string: ParseRule(string, null, Precedence.none),
     TokenType.number: ParseRule(number, null, Precedence.none),
     TokenType.kAnd: ParseRule(null, null, Precedence.none),
     TokenType.kClass: ParseRule(null, null, Precedence.none),

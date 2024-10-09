@@ -57,7 +57,13 @@ class VM {
         case OpCode.opLess:
           if (_binary((a, b) => Bool(a < b))) return InterpreterResult.runtimeError;
         case OpCode.opAdd:
-          if (_binary((a, b) => Number(a + b))) return InterpreterResult.runtimeError;
+          if ((_peek(-1), _peek(-2)) case (Obj(), Obj())) {
+            var b = (pop() as Obj).value as String;
+            var a = (pop() as Obj).value as String;
+            push(Obj('$a$b'));
+          } else {
+            if (_binary((a, b) => Number(a + b))) return InterpreterResult.runtimeError;
+          }
         case OpCode.opSubtract:
           if (_binary((a, b) => Number(a - b))) return InterpreterResult.runtimeError;
         case OpCode.opMultiply:
@@ -80,6 +86,8 @@ class VM {
       }
     }
   }
+
+  Value _peek(int index) => stack[stack.length + index];
 
   bool _binary(Value Function(double, double) op) {
     if ((pop(), pop()) case (Number b, Number a)) {

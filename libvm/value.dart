@@ -58,6 +58,21 @@ class Number extends Value {
   int get hashCode => value.hashCode;
 }
 
+class Obj extends Value {
+  const Obj(this.value);
+
+  final Object value;
+
+  @override
+  String toString() => '$value';
+
+  @override
+  bool operator ==(Object other) => other is Obj && value == other.value;
+
+  @override
+  int get hashCode => value.hashCode;
+}
+
 void printValue(Value value) {
   switch (value) {
     case Nil():
@@ -66,5 +81,11 @@ void printValue(Value value) {
       printf(value ? 'true' : 'false');
     case Number(:var value):
       printf('%g', [value]);
+    case Obj(:var value):
+      printObject(value);
   }
+}
+
+void printObject(Object object) {
+  printf('%s', [object]);
 }
