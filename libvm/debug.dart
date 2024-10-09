@@ -1,5 +1,6 @@
 import 'chunk.dart';
 import 'printf.dart';
+import 'value.dart';
 
 void disassembleChunk(Chunk chunk, String name) {
   printf('== %s ==\n', [name]);
@@ -19,6 +20,18 @@ int disassembleInstruction(Chunk chunk, int offset) {
   switch (instruction) {
     case OpCode.opConstant:
       return _constantInstruction('OP_CONSTANT', chunk, offset);
+    case OpCode.opNil:
+      return _simpleInstruction('OP_ NIL', offset);
+    case OpCode.opTrue:
+      return _simpleInstruction('OP_ TRUE', offset);
+    case OpCode.opFalse:
+      return _simpleInstruction('OP_ FALSE', offset);
+    case OpCode.opEqual:
+      return _simpleInstruction('OP_EQUAL', offset);
+    case OpCode.opGreater:
+      return _simpleInstruction('OP_GREATER', offset);
+    case OpCode.opLess:
+      return _simpleInstruction('OP_LESS', offset);
     case OpCode.opAdd:
       return _simpleInstruction('OP_ADD', offset);
     case OpCode.opSubtract:
@@ -27,6 +40,8 @@ int disassembleInstruction(Chunk chunk, int offset) {
       return _simpleInstruction('OP_MULTIPLY', offset);
     case OpCode.opDivide:
       return _simpleInstruction('OP_DIVIDE', offset);
+    case OpCode.opNot:
+      return _simpleInstruction('OP_NOT', offset);
     case OpCode.opNegate:
       return _simpleInstruction('OP_NEGATE', offset);
     case OpCode.opReturn:
@@ -45,8 +60,4 @@ int _constantInstruction(String name, Chunk chunk, int offset) {
 int _simpleInstruction(String name, int offset) {
   printf('%s\n', [name]);
   return offset + 1;
-}
-
-void printValue(double value) {
-  printf('%g', [value]);
 }

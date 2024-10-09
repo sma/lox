@@ -3,6 +3,7 @@ import 'debug.dart';
 import 'chunk.dart';
 import 'printf.dart';
 import 'scanner.dart';
+import 'value.dart';
 
 const traceInstructions = true;
 
@@ -11,11 +12,11 @@ enum InterpreterResult { ok, compileError, runtimeError }
 class VM {
   late Chunk chunk;
   late int ip;
-  final stack = <double>[];
+  final stack = <Value>[];
 
-  void push(double value) => stack.add(value);
+  void push(Value value) => stack.add(value);
 
-  double pop() => stack.removeLast();
+  Value pop() => stack.removeLast();
 
   InterpreterResult interpret(String source) {
     chunk = Chunk();
@@ -43,16 +44,35 @@ class VM {
       switch (instruction) {
         case OpCode.opConstant:
           push(_readConstant());
+        case OpCode.opNil:
+          push(const Nil());
+        case OpCode.opTrue:
+          push(const Bool(true));
+        case OpCode.opFalse:
+          push(const Bool(false));
+        case OpCode.opEqual:
+          push(Bool(pop() == pop()));
+        case OpCode.opGreater:
+          if (_binary((a, b) => Bool(a > b))) return InterpreterResult.runtimeError;
+        case OpCode.opLess:
+          if (_binary((a, b) => Bool(a < b))) return InterpreterResult.runtimeError;
         case OpCode.opAdd:
-          push(pop() + pop());
+          if (_binary((a, b) => Number(a + b))) return InterpreterResult.runtimeError;
         case OpCode.opSubtract:
-          push(-pop() + pop());
+          if (_binary((a, b) => Number(a - b))) return InterpreterResult.runtimeError;
         case OpCode.opMultiply:
-          push(pop() * pop());
+          if (_binary((a, b) => Number(a * b))) return InterpreterResult.runtimeError;
         case OpCode.opDivide:
-          push(1 / pop() * pop());
+          if (_binary((a, b) => Number(a / b))) return InterpreterResult.runtimeError;
+        case OpCode.opNot:
+          push(Bool(pop().isFalsey));
         case OpCode.opNegate:
-          push(-pop());
+          if (pop() case Number n) {
+            push(Number(-n.value));
+          } else {
+            _runtimeError('Operand must be a number.');
+            return InterpreterResult.runtimeError;
+          }
         case OpCode.opReturn:
           printValue(pop());
           printf('\n');
@@ -61,9 +81,26 @@ class VM {
     }
   }
 
+  bool _binary(Value Function(double, double) op) {
+    if ((pop(), pop()) case (Number b, Number a)) {
+      push(op(a.value, b.value));
+      return false;
+    } else {
+      _runtimeError('Operands must be numbers.');
+      return true;
+    }
+  }
+
   int _readByte() => chunk.code[ip++];
 
-  double _readConstant() => chunk.constants[_readByte()];
+  Value _readConstant() => chunk.constants[_readByte()];
+
+  void _runtimeError(String format, [List<Object?> args = const []]) {
+    printf(format, args);
+    printf('\n');
+    printf('[line %d] in script\n', [chunk.lines[ip - 1]]);
+    stack.clear();
+  }
 }
 
 final vm = VM();

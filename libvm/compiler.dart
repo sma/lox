@@ -2,6 +2,7 @@ import 'chunk.dart';
 import 'debug.dart';
 import 'printf.dart';
 import 'scanner.dart';
+import 'value.dart';
 
 const debugPrintCode = false;
 
@@ -74,7 +75,7 @@ class Parser {
     emitOp(OpCode.opReturn);
   }
 
-  int makeConstant(double value) {
+  int makeConstant(Value value) {
     var constant = chunk.addConstant(value);
     if (constant > 255) {
       error('Too many constants in one chunk.');
@@ -83,7 +84,7 @@ class Parser {
     return constant;
   }
 
-  void emitConstant(double value) {
+  void emitConstant(Value value) {
     emitOp(OpCode.opConstant);
     emitByte(makeConstant(value));
   }
@@ -107,7 +108,7 @@ class Parser {
   }
 
   void number() {
-    emitConstant(double.parse(previous.start));
+    emitConstant(Number(double.parse(previous.start)));
   }
 
   void unary() {
@@ -119,7 +120,9 @@ class Parser {
     // Emit the operator instruction.
     switch (operatorType) {
       case TokenType.minus:
-        emitByte(OpCode.opNegate.index);
+        emitOp(OpCode.opNegate);
+      case TokenType.bang:
+        emitOp(OpCode.opNot);
       default:
         return; // Unreachable.
     }
@@ -130,6 +133,21 @@ class Parser {
     var rule = getRule(operatorType);
     parsePrecedence(rule.precedence.next);
     switch (operatorType) {
+      case TokenType.bangEqual:
+        emitOp(OpCode.opEqual);
+        emitOp(OpCode.opNot);
+      case TokenType.equalEqual:
+        emitOp(OpCode.opEqual);
+      case TokenType.greater:
+        emitOp(OpCode.opGreater);
+      case TokenType.greaterEqual:
+        emitOp(OpCode.opLess);
+        emitOp(OpCode.opNot);
+      case TokenType.less:
+        emitOp(OpCode.opLess);
+      case TokenType.lessEqual:
+        emitOp(OpCode.opGreater);
+        emitOp(OpCode.opNot);
       case TokenType.plus:
         emitOp(OpCode.opAdd);
       case TokenType.minus:
@@ -138,6 +156,19 @@ class Parser {
         emitOp(OpCode.opMultiply);
       case TokenType.slash:
         emitOp(OpCode.opDivide);
+      default:
+        return; // Unreachable.
+    }
+  }
+
+  void literal() {
+    switch (previous.type) {
+      case TokenType.kFalse:
+        emitOp(OpCode.opFalse);
+      case TokenType.kTrue:
+        emitOp(OpCode.opTrue);
+      case TokenType.kNil:
+        emitOp(OpCode.opNil);
       default:
         return; // Unreachable.
     }
@@ -173,31 +204,31 @@ class Parser {
     TokenType.semicolon: ParseRule(null, null, Precedence.none),
     TokenType.slash: ParseRule(null, binary, Precedence.factor),
     TokenType.star: ParseRule(null, binary, Precedence.factor),
-    TokenType.bang: ParseRule(null, null, Precedence.none),
-    TokenType.bangEqual: ParseRule(null, null, Precedence.none),
+    TokenType.bang: ParseRule(unary, null, Precedence.none),
+    TokenType.bangEqual: ParseRule(null, binary, Precedence.equality),
     TokenType.equal: ParseRule(null, null, Precedence.none),
-    TokenType.equalEqual: ParseRule(null, null, Precedence.none),
-    TokenType.greater: ParseRule(null, null, Precedence.none),
-    TokenType.greaterEqual: ParseRule(null, null, Precedence.none),
-    TokenType.less: ParseRule(null, null, Precedence.none),
-    TokenType.lessEqual: ParseRule(null, null, Precedence.none),
+    TokenType.equalEqual: ParseRule(null, binary, Precedence.equality),
+    TokenType.greater: ParseRule(null, binary, Precedence.comparison),
+    TokenType.greaterEqual: ParseRule(null, binary, Precedence.comparison),
+    TokenType.less: ParseRule(null, binary, Precedence.comparison),
+    TokenType.lessEqual: ParseRule(null, binary, Precedence.comparison),
     TokenType.identifier: ParseRule(null, null, Precedence.none),
     TokenType.string: ParseRule(null, null, Precedence.none),
     TokenType.number: ParseRule(number, null, Precedence.none),
     TokenType.kAnd: ParseRule(null, null, Precedence.none),
     TokenType.kClass: ParseRule(null, null, Precedence.none),
     TokenType.kElse: ParseRule(null, null, Precedence.none),
-    TokenType.kFalse: ParseRule(null, null, Precedence.none),
+    TokenType.kFalse: ParseRule(literal, null, Precedence.none),
     TokenType.kFor: ParseRule(null, null, Precedence.none),
     TokenType.kFun: ParseRule(null, null, Precedence.none),
     TokenType.kIf: ParseRule(null, null, Precedence.none),
-    TokenType.kNil: ParseRule(null, null, Precedence.none),
+    TokenType.kNil: ParseRule(literal, null, Precedence.none),
     TokenType.kOr: ParseRule(null, null, Precedence.none),
     TokenType.kPrint: ParseRule(null, null, Precedence.none),
     TokenType.kReturn: ParseRule(null, null, Precedence.none),
     TokenType.kSuper: ParseRule(null, null, Precedence.none),
     TokenType.kThis: ParseRule(null, null, Precedence.none),
-    TokenType.kTrue: ParseRule(null, null, Precedence.none),
+    TokenType.kTrue: ParseRule(literal, null, Precedence.none),
     TokenType.kVar: ParseRule(null, null, Precedence.none),
     TokenType.kWhile: ParseRule(null, null, Precedence.none),
     TokenType.error: ParseRule(null, null, Precedence.none),

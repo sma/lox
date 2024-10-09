@@ -1,9 +1,18 @@
+import 'value.dart';
+
 enum OpCode {
   opConstant,
+  opNil,
+  opTrue,
+  opFalse,
+  opEqual,
+  opGreater,
+  opLess,
   opAdd,
   opSubtract,
   opMultiply,
   opDivide,
+  opNot,
   opNegate,
   opReturn,
 }
@@ -11,7 +20,7 @@ enum OpCode {
 class Chunk {
   final code = <int>[];
   final lines = <int>[];
-  final constants = <double>[];
+  final constants = <Value>[];
 
   int get count => code.length;
 
@@ -20,7 +29,7 @@ class Chunk {
     lines.add(line);
   }
 
-  int addConstant(double value) {
+  int addConstant(Value value) {
     var index = constants.indexOf(value);
     if (index == -1) {
       index = constants.length;
