@@ -1,4 +1,4 @@
-library ast;
+library;
 
 import 'token.dart';
 

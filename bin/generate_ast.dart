@@ -36,7 +36,7 @@ void main(List<String> args) {
   ]);
 
   var writer = File('$outputDir/ast.dart').openWrite();
-  writer.writeln('library ast;');
+  writer.writeln('library;');
   writer.writeln();
   writer.writeln("import 'token.dart';");
   writer.writeln();
