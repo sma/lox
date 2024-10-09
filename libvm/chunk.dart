@@ -1,5 +1,10 @@
 enum OpCode {
   opConstant,
+  opAdd,
+  opSubtract,
+  opMultiply,
+  opDivide,
+  opNegate,
   opReturn,
 }
 
