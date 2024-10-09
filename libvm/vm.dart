@@ -1,3 +1,4 @@
+import 'compiler.dart';
 import 'debug.dart';
 import 'chunk.dart';
 import 'printf.dart';
@@ -15,10 +16,9 @@ class VM {
 
   double pop() => stack.removeLast();
 
-  InterpreterResult interpret(Chunk chunk) {
-    this.chunk = chunk;
-    ip = 0;
-    return run();
+  InterpreterResult interpret(String source) {
+    compile(source);
+    return InterpreterResult.ok;
   }
 
   InterpreterResult run() {

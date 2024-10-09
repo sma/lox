@@ -1,19 +1,35 @@
-import 'chunk.dart';
-import 'debug.dart';
+import 'dart:io';
+
+import 'printf.dart';
 import 'vm.dart';
 
 void main(List<String> arguments) {
-  final chunk = Chunk();
-  chunk.writeOp(OpCode.opConstant, 123);
-  chunk.write(chunk.addConstant(1.2), 123);
-  chunk.writeOp(OpCode.opConstant, 123);
-  chunk.write(chunk.addConstant(3.4), 123);
-  chunk.writeOp(OpCode.opAdd, 123);
-  chunk.writeOp(OpCode.opConstant, 123);
-  chunk.write(chunk.addConstant(5.6), 123);
-  chunk.writeOp(OpCode.opDivide, 123);
-  chunk.writeOp(OpCode.opNegate, 123);
-  chunk.writeOp(OpCode.opReturn, 123);
-  disassembleChunk(chunk, 'test chunk');
-  vm.interpret(chunk);
+  if (arguments.isEmpty) {
+    repl();
+  } else if (arguments.length == 1) {
+    runFile(arguments.single);
+  } else {
+    printf('Usage: clox [script]\n');
+    exit(64);
+  }
+}
+
+void repl() {
+  for (;;) {
+    printf("> ");
+    final line = stdin.readLineSync();
+    if (line == null) break;
+    vm.interpret(line);
+  }
+}
+
+void runFile(String path) {
+  if (!File(path).existsSync()) {
+    printf("Could not open file '$path'.\n");
+    exit(74);
+  }
+  final source = File(path).readAsStringSync();
+  final result = vm.interpret(source);
+  if (result == InterpreterResult.compileError) exit(65);
+  if (result == InterpreterResult.runtimeError) exit(70);
 }
