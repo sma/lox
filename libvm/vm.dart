@@ -13,6 +13,7 @@ class VM {
   late Chunk chunk;
   late int ip;
   final stack = <Value>[];
+  final globals = <String, Value>{};
 
   void push(Value value) => stack.add(value);
 
@@ -50,6 +51,25 @@ class VM {
           push(const Bool(true));
         case OpCode.opFalse:
           push(const Bool(false));
+        case OpCode.opPop:
+          pop();
+        case OpCode.opGetGlobal:
+          var name = _readString();
+          if (!globals.containsKey(name)) {
+            _runtimeError("Undefined variable '%s'.", [name]);
+            return InterpreterResult.runtimeError;
+          }
+          push(globals[name]!);
+        case OpCode.opDefineGlobal:
+          var name = _readString();
+          globals[name] = pop();
+        case OpCode.opSetGlobal:
+          var name = _readString();
+          if (!globals.containsKey(name)) {
+            _runtimeError("Undefined variable '%s'.", [name]);
+            return InterpreterResult.runtimeError;
+          }
+          globals[name] = _peek(-1);
         case OpCode.opEqual:
           push(Bool(pop() == pop()));
         case OpCode.opGreater:
@@ -79,9 +99,10 @@ class VM {
             _runtimeError('Operand must be a number.');
             return InterpreterResult.runtimeError;
           }
-        case OpCode.opReturn:
+        case OpCode.opPrint:
           printValue(pop());
           printf('\n');
+        case OpCode.opReturn:
           return InterpreterResult.ok;
       }
     }
@@ -102,6 +123,8 @@ class VM {
   int _readByte() => chunk.code[ip++];
 
   Value _readConstant() => chunk.constants[_readByte()];
+
+  String _readString() => (_readConstant() as Obj).value as String;
 
   void _runtimeError(String format, [List<Object?> args = const []]) {
     printf(format, args);

@@ -5,6 +5,10 @@ enum OpCode {
   opNil,
   opTrue,
   opFalse,
+  opPop,
+  opGetGlobal,
+  opDefineGlobal,
+  opSetGlobal,
   opEqual,
   opGreater,
   opLess,
@@ -14,6 +18,7 @@ enum OpCode {
   opDivide,
   opNot,
   opNegate,
+  opPrint,
   opReturn,
 }
 

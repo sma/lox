@@ -19,7 +19,11 @@ class Parser {
 
   bool compile() {
     advance();
-    expression();
+
+    while (!match(TokenType.eof)) {
+      declaration();
+    }
+
     consume(TokenType.eof, 'Expect end of expression.');
     endCompiler();
     return !hadError;
@@ -41,6 +45,14 @@ class Parser {
     }
     errorAtCurrent(message);
   }
+
+  bool match(TokenType type) {
+    if (!check(type)) return false;
+    advance();
+    return true;
+  }
+
+  bool check(TokenType type) => current.type == type;
 
   void errorAtCurrent(String message) => errorAt(current, message);
 
@@ -98,25 +110,109 @@ class Parser {
 
   // Parsing rules.
 
+  void declaration() {
+    if (match(TokenType.kVar)) {
+      varDeclaration();
+    } else {
+      statement();
+    }
+
+    if (panicMode) synchronize();
+  }
+
+  void varDeclaration() {
+    var global = parseVariable('Expect variable name.');
+
+    if (match(TokenType.equal)) {
+      expression();
+    } else {
+      emitOp(OpCode.opNil);
+    }
+    consume(TokenType.semicolon, "Expect ';' after variable declaration.");
+
+    defineVariable(global);
+  }
+
+  void statement() {
+    if (match(TokenType.kPrint)) {
+      printStatement();
+    } else {
+      expressionStatement();
+    }
+  }
+
+  void printStatement() {
+    expression();
+    consume(TokenType.semicolon, "Expect ';' after value.");
+    emitOp(OpCode.opPrint);
+  }
+
+  void expressionStatement() {
+    expression();
+    consume(TokenType.semicolon, "Expect ';' after expression.");
+    emitOp(OpCode.opPop);
+  }
+
+  void synchronize() {
+    panicMode = false;
+
+    while (current.type != TokenType.eof) {
+      if (previous.type == TokenType.semicolon) return;
+
+      switch (current.type) {
+        case TokenType.kClass:
+        case TokenType.kFun:
+        case TokenType.kVar:
+        case TokenType.kFor:
+        case TokenType.kIf:
+        case TokenType.kWhile:
+        case TokenType.kPrint:
+        case TokenType.kReturn:
+          return;
+        default:
+          // Do nothing.
+          break;
+      }
+
+      advance();
+    }
+  }
+
   void expression() {
     parsePrecedence(Precedence.assignment);
   }
 
-  void grouping() {
+  void grouping(bool canAssign) {
     expression();
     consume(TokenType.rightParen, "Expect ')' after expression.");
   }
 
-  void number() {
+  void number(bool canAssign) {
     emitConstant(Number(double.parse(previous.start)));
   }
 
-  void string() {
+  void string(bool canAssign) {
     var chars = previous.start.substring(1, previous.start.length - 1);
     emitConstant(Obj(chars));
   }
 
-  void unary() {
+  void variable(bool canAssign) {
+    namedVariable(previous, canAssign);
+  }
+
+  void namedVariable(Token name, bool canAssign) {
+    var arg = identifierConstant(name);
+
+    if (canAssign && match(TokenType.equal)) {
+      expression();
+      emitOp(OpCode.opSetGlobal);
+    } else {
+      emitOp(OpCode.opGetGlobal);
+    }
+    emitByte(arg);
+  }
+
+  void unary(bool canAssign) {
     var operatorType = previous.type;
 
     // Compile the operand.
@@ -133,7 +229,7 @@ class Parser {
     }
   }
 
-  void binary() {
+  void binary(bool canAssign) {
     var operatorType = previous.type;
     var rule = getRule(operatorType);
     parsePrecedence(rule.precedence.next);
@@ -166,7 +262,7 @@ class Parser {
     }
   }
 
-  void literal() {
+  void literal(bool canAssign) {
     switch (previous.type) {
       case TokenType.kFalse:
         emitOp(OpCode.opFalse);
@@ -187,11 +283,16 @@ class Parser {
       return;
     }
 
-    prefixRule();
+    var canAssign = precedence <= Precedence.assignment;
+    prefixRule(canAssign);
 
     while (precedence <= getRule(current.type).precedence) {
       advance();
-      getRule(previous.type).infix!();
+      getRule(previous.type).infix!(canAssign);
+    }
+
+    if (canAssign && match(TokenType.equal)) {
+      error('Invalid assignment target.');
     }
   }
 
@@ -217,7 +318,7 @@ class Parser {
     TokenType.greaterEqual: ParseRule(null, binary, Precedence.comparison),
     TokenType.less: ParseRule(null, binary, Precedence.comparison),
     TokenType.lessEqual: ParseRule(null, binary, Precedence.comparison),
-    TokenType.identifier: ParseRule(null, null, Precedence.none),
+    TokenType.identifier: ParseRule(variable, null, Precedence.none),
     TokenType.string: ParseRule(string, null, Precedence.none),
     TokenType.number: ParseRule(number, null, Precedence.none),
     TokenType.kAnd: ParseRule(null, null, Precedence.none),
@@ -239,6 +340,20 @@ class Parser {
     TokenType.error: ParseRule(null, null, Precedence.none),
     TokenType.eof: ParseRule(null, null, Precedence.none),
   };
+
+  int identifierConstant(Token name) {
+    return makeConstant(Obj(name.start));
+  }
+
+  int parseVariable(String message) {
+    consume(TokenType.identifier, message);
+    return identifierConstant(previous);
+  }
+
+  void defineVariable(int global) {
+    emitOp(OpCode.opDefineGlobal);
+    emitByte(global);
+  }
 }
 
 enum Precedence {
@@ -259,7 +374,7 @@ enum Precedence {
   bool operator <=(Precedence other) => index <= other.index;
 }
 
-typedef ParseFn = void Function();
+typedef ParseFn = void Function(bool canAssign);
 
 class ParseRule {
   const ParseRule(this.prefix, this.infix, this.precedence);
