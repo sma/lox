@@ -4,7 +4,7 @@ import 'printf.dart';
 import 'scanner.dart';
 import 'value.dart';
 
-const debugPrintCode = false;
+const debugPrintCode = true;
 
 class Parser {
   Parser(this.scanner, this.chunk);
@@ -89,6 +89,13 @@ class Parser {
     emitOp(OpCode.opReturn);
   }
 
+  int emitJump(OpCode op) {
+    emitOp(op);
+    emitByte(0xff);
+    emitByte(0xff);
+    return chunk.count - 2;
+  }
+
   int makeConstant(Value value) {
     var constant = chunk.addConstant(value);
     if (constant > 255) {
@@ -101,6 +108,25 @@ class Parser {
   void emitConstant(Value value) {
     emitOp(OpCode.opConstant);
     emitByte(makeConstant(value));
+  }
+
+  void emitLoop(int offset) {
+    emitOp(OpCode.opLoop);
+    var jump = chunk.count - offset + 2;
+    if (jump > 65535) {
+      error('Loop body too large.');
+    }
+    emitByte((jump >> 8) & 0xff);
+    emitByte(jump & 0xff);
+  }
+
+  void patchJump(int offset) {
+    var jump = chunk.count - offset - 2;
+    if (jump > 65535) {
+      error('Too much code to jump over.');
+    }
+    chunk.code[offset] = (jump >> 8) & 0xff;
+    chunk.code[offset + 1] = jump & 0xff;
   }
 
   void endCompiler() {
@@ -151,6 +177,12 @@ class Parser {
   void statement() {
     if (match(TokenType.kPrint)) {
       printStatement();
+    } else if (match(TokenType.kFor)) {
+      forStatement();
+    } else if (match(TokenType.kIf)) {
+      ifStatement();
+    } else if (match(TokenType.kWhile)) {
+      whileStatement();
     } else if (match(TokenType.leftBrace)) {
       beginScope();
       block();
@@ -164,6 +196,79 @@ class Parser {
     expression();
     consume(TokenType.semicolon, "Expect ';' after value.");
     emitOp(OpCode.opPrint);
+  }
+
+  void forStatement() {
+    beginScope();
+    consume(TokenType.leftParen, "Expect '(' after 'for'.");
+
+    if (match(TokenType.semicolon)) {
+      // No initializer.
+    } else if (match(TokenType.kVar)) {
+      varDeclaration();
+    } else {
+      expressionStatement();
+    }
+
+    var loopStart = chunk.count;
+    var exitJump = -1;
+    if (!match(TokenType.semicolon)) {
+      expression();
+      consume(TokenType.semicolon, "Expect ';' after loop condition.");
+
+      // Jump out of the loop if the condition is false.
+      exitJump = emitJump(OpCode.opJumpIfFalse);
+      emitOp(OpCode.opPop); // Condition.
+    }
+
+    if (!match(TokenType.rightParen)) {
+      var bodyJump = emitJump(OpCode.opJump);
+      var incrementStart = chunk.count;
+      expression();
+      emitOp(OpCode.opPop);
+      consume(TokenType.rightParen, "Expect ')' after for clauses.");
+
+      emitLoop(loopStart);
+      loopStart = incrementStart;
+      patchJump(bodyJump);
+    }
+
+    statement();
+    emitLoop(loopStart);
+
+    if (exitJump != -1) {
+      patchJump(exitJump);
+      emitOp(OpCode.opPop); // Condition.
+    }
+
+    endScope();
+  }
+
+  void ifStatement() {
+    consume(TokenType.leftParen, "Expect '(' after 'if'.");
+    expression();
+    consume(TokenType.rightParen, "Expect ')' after condition.");
+    var thenJump = emitJump(OpCode.opJumpIfFalse);
+    emitOp(OpCode.opPop);
+    statement();
+    var elseJump = emitJump(OpCode.opJump);
+    patchJump(thenJump);
+    emitOp(OpCode.opPop);
+    if (match(TokenType.kElse)) statement();
+    patchJump(elseJump);
+  }
+
+  void whileStatement() {
+    var loopStart = chunk.count;
+    consume(TokenType.leftParen, "Expect '(' after 'while'.");
+    expression();
+    consume(TokenType.rightParen, "Expect ')' after condition.");
+    var exitJump = emitJump(OpCode.opJumpIfFalse);
+    emitOp(OpCode.opPop);
+    statement();
+    emitLoop(loopStart);
+    patchJump(exitJump);
+    emitOp(OpCode.opPop);
   }
 
   void expressionStatement() {
@@ -370,7 +475,7 @@ class Parser {
     TokenType.identifier: ParseRule(variable, null, Precedence.none),
     TokenType.string: ParseRule(string, null, Precedence.none),
     TokenType.number: ParseRule(number, null, Precedence.none),
-    TokenType.kAnd: ParseRule(null, null, Precedence.none),
+    TokenType.kAnd: ParseRule(null, and_, Precedence.and),
     TokenType.kClass: ParseRule(null, null, Precedence.none),
     TokenType.kElse: ParseRule(null, null, Precedence.none),
     TokenType.kFalse: ParseRule(literal, null, Precedence.none),
@@ -378,7 +483,7 @@ class Parser {
     TokenType.kFun: ParseRule(null, null, Precedence.none),
     TokenType.kIf: ParseRule(null, null, Precedence.none),
     TokenType.kNil: ParseRule(literal, null, Precedence.none),
-    TokenType.kOr: ParseRule(null, null, Precedence.none),
+    TokenType.kOr: ParseRule(null, or_, Precedence.or),
     TokenType.kPrint: ParseRule(null, null, Precedence.none),
     TokenType.kReturn: ParseRule(null, null, Precedence.none),
     TokenType.kSuper: ParseRule(null, null, Precedence.none),
@@ -435,6 +540,22 @@ class Parser {
 
     emitOp(OpCode.opDefineGlobal);
     emitByte(global);
+  }
+
+  void and_(bool canAssign) {
+    var endJump = emitJump(OpCode.opJumpIfFalse);
+    emitOp(OpCode.opPop);
+    parsePrecedence(Precedence.and);
+    patchJump(endJump);
+  }
+
+  void or_(bool canAssign) {
+    var elseJump = emitJump(OpCode.opJumpIfFalse);
+    var endJump = emitJump(OpCode.opJump);
+    patchJump(elseJump);
+    emitOp(OpCode.opPop);
+    parsePrecedence(Precedence.or);
+    patchJump(endJump);
   }
 }
 

@@ -21,11 +21,11 @@ int disassembleInstruction(Chunk chunk, int offset) {
     case OpCode.opConstant:
       return _constantInstruction('OP_CONSTANT', chunk, offset);
     case OpCode.opNil:
-      return _simpleInstruction('OP_ NIL', offset);
+      return _simpleInstruction('OP_NIL', offset);
     case OpCode.opTrue:
-      return _simpleInstruction('OP_ TRUE', offset);
+      return _simpleInstruction('OP_TRUE', offset);
     case OpCode.opFalse:
-      return _simpleInstruction('OP_ FALSE', offset);
+      return _simpleInstruction('OP_FALSE', offset);
     case OpCode.opPop:
       return _simpleInstruction('OP_POP', offset);
     case OpCode.opGetLocal:
@@ -58,6 +58,12 @@ int disassembleInstruction(Chunk chunk, int offset) {
       return _simpleInstruction('OP_NEGATE', offset);
     case OpCode.opPrint:
       return _simpleInstruction('OP_PRINT', offset);
+    case OpCode.opJump:
+      return _jumpInstruction('OP_JUMP', 1, chunk, offset);
+    case OpCode.opJumpIfFalse:
+      return _jumpInstruction('OP_JUMP_IF_FALSE', 1, chunk, offset);
+    case OpCode.opLoop:
+      return _jumpInstruction('OP_LOOP', -1, chunk, offset);
     case OpCode.opReturn:
       return _simpleInstruction('OP_RETURN', offset);
   }
@@ -80,4 +86,10 @@ int _byteInstruction(String name, Chunk chunk, int offset) {
   final slot = chunk.code[offset + 1];
   printf('%-16s %4d\n', [name, slot]);
   return offset + 2;
+}
+
+int _jumpInstruction(String name, int sign, Chunk chunk, int offset) {
+  final jump = (chunk.code[offset + 1] << 8) | chunk.code[offset + 2];
+  printf('%-16s %4d -> %d\n', [name, offset, offset + 3 + sign * jump]);
+  return offset + 3;
 }

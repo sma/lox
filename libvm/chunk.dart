@@ -21,6 +21,9 @@ enum OpCode {
   opNot,
   opNegate,
   opPrint,
+  opJump,
+  opJumpIfFalse,
+  opLoop,
   opReturn,
 }
 

@@ -5,7 +5,7 @@ import 'printf.dart';
 import 'scanner.dart';
 import 'value.dart';
 
-const traceInstructions = true;
+const traceInstructions = false;
 
 enum InterpreterResult { ok, compileError, runtimeError }
 
@@ -108,6 +108,15 @@ class VM {
         case OpCode.opPrint:
           printValue(pop());
           printf('\n');
+        case OpCode.opJump:
+          var offset = _readShort(); // must be 2 lines
+          ip += offset;
+        case OpCode.opJumpIfFalse:
+          var offset = _readShort();
+          if (_peek(-1).isFalsey) ip += offset;
+        case OpCode.opLoop:
+          var offset = _readShort(); // must be 2 lines
+          ip -= offset;
         case OpCode.opReturn:
           return InterpreterResult.ok;
       }
@@ -127,6 +136,8 @@ class VM {
   }
 
   int _readByte() => chunk.code[ip++];
+
+  int _readShort() => (_readByte() << 8) | _readByte();
 
   Value _readConstant() => chunk.constants[_readByte()];
 
