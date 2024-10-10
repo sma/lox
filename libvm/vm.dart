@@ -9,9 +9,15 @@ const traceInstructions = false;
 
 enum InterpreterResult { ok, compileError, runtimeError }
 
+class CallFrame {
+  CallFrame(this.function, this.slots);
+  final ObjFunction function;
+  final List<Value> slots;
+  int ip = 0;
+}
+
 class VM {
-  late Chunk chunk;
-  late int ip;
+  final frames = <CallFrame>[];
   final stack = <Value>[];
   final globals = <String, Value>{};
 
@@ -20,16 +26,18 @@ class VM {
   Value pop() => stack.removeLast();
 
   InterpreterResult interpret(String source) {
-    chunk = Chunk();
-    final parser = Parser(Scanner(source), chunk);
-    if (!parser.compile()) {
+    final compiler = Compiler(Scanner(source));
+    final function = compiler.compile();
+    if (function == null) {
       return InterpreterResult.compileError;
     }
-    ip = 0;
+    frames.add(CallFrame(function, [function]));
     return run();
   }
 
   InterpreterResult run() {
+    var frame = frames.last;
+    var chunk = frame.function.chunk;
     for (;;) {
       if (traceInstructions) {
         printf('          ');
@@ -39,7 +47,7 @@ class VM {
           printf(' ]');
         }
         printf('\n');
-        disassembleInstruction(chunk, ip);
+        disassembleInstruction(chunk, frame.ip);
       }
       final instruction = OpCode.values[_readByte()];
       switch (instruction) {
@@ -110,13 +118,13 @@ class VM {
           printf('\n');
         case OpCode.opJump:
           var offset = _readShort(); // must be 2 lines
-          ip += offset;
+          frame.ip += offset;
         case OpCode.opJumpIfFalse:
           var offset = _readShort();
-          if (_peek(-1).isFalsey) ip += offset;
+          if (_peek(-1).isFalsey) frame.ip += offset;
         case OpCode.opLoop:
           var offset = _readShort(); // must be 2 lines
-          ip -= offset;
+          frame.ip -= offset;
         case OpCode.opReturn:
           return InterpreterResult.ok;
       }
@@ -135,18 +143,22 @@ class VM {
     }
   }
 
-  int _readByte() => chunk.code[ip++];
+  Chunk get _chunk => frames.last.function.chunk;
+
+  int _readByte() => _chunk.code[frames.last.ip++];
 
   int _readShort() => (_readByte() << 8) | _readByte();
 
-  Value _readConstant() => chunk.constants[_readByte()];
+  Value _readConstant() => _chunk.constants[_readByte()];
 
   String _readString() => (_readConstant() as ObjString).value;
 
   void _runtimeError(String format, [List<Object?> args = const []]) {
+    var frame = frames.last;
+    var name = frame.function.name ?? '<script>';
     printf(format, args);
     printf('\n');
-    printf('[line %d] in script\n', [chunk.lines[ip - 1]]);
+    printf('[line %d] in %s\n', [frame.function.chunk.lines[frame.ip - 1], name]);
     stack.clear();
   }
 }

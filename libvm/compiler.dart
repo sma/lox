@@ -6,11 +6,11 @@ import 'value.dart';
 
 const debugPrintCode = true;
 
-class Parser {
-  Parser(this.scanner, this.chunk);
+class Compiler {
+  Compiler(this.scanner);
 
   final Scanner scanner;
-  final Chunk chunk;
+  final chunk = Chunk();
 
   Token current = Token.none;
   Token previous = Token.none;
@@ -19,7 +19,7 @@ class Parser {
   int scopeDepth = 0;
   final locals = <Local>[];
 
-  bool compile() {
+  ObjFunction? compile() {
     advance();
 
     while (!match(TokenType.eof)) {
@@ -28,7 +28,7 @@ class Parser {
 
     consume(TokenType.eof, 'Expect end of expression.');
     endCompiler();
-    return !hadError;
+    return !hadError ? ObjFunction(chunk) : null;
   }
 
   void advance() {
