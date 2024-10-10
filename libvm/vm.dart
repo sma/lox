@@ -83,10 +83,10 @@ class VM {
         case OpCode.opLess:
           if (_binary((a, b) => Bool(a < b))) return InterpreterResult.runtimeError;
         case OpCode.opAdd:
-          if ((_peek(-1), _peek(-2)) case (Obj(), Obj())) {
-            var b = (pop() as Obj).value as String;
-            var a = (pop() as Obj).value as String;
-            push(Obj('$a$b'));
+          if ((_peek(-1), _peek(-2)) case (ObjString(), ObjString())) {
+            var b = (pop() as ObjString).value;
+            var a = (pop() as ObjString).value;
+            push(ObjString('$a$b'));
           } else {
             if (_binary((a, b) => Number(a + b))) return InterpreterResult.runtimeError;
           }
@@ -141,7 +141,7 @@ class VM {
 
   Value _readConstant() => chunk.constants[_readByte()];
 
-  String _readString() => (_readConstant() as Obj).value as String;
+  String _readString() => (_readConstant() as ObjString).value;
 
   void _runtimeError(String format, [List<Object?> args = const []]) {
     printf(format, args);

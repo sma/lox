@@ -1,3 +1,4 @@
+import 'chunk.dart';
 import 'printf.dart';
 
 sealed class Value {
@@ -58,19 +59,34 @@ class Number extends Value {
   int get hashCode => value.hashCode;
 }
 
-class Obj extends Value {
-  const Obj(this.value);
+sealed class Obj extends Value {
+  const Obj();
+}
 
-  final Object value;
+class ObjString extends Obj {
+  const ObjString(this.value);
+
+  final String value;
 
   @override
-  String toString() => '$value';
+  String toString() => value;
 
   @override
-  bool operator ==(Object other) => other is Obj && value == other.value;
+  bool operator ==(Object other) => other is ObjString && value == other.value;
 
   @override
   int get hashCode => value.hashCode;
+}
+
+class ObjFunction extends Obj {
+  ObjFunction(this.chunk, [this.arity = 0, this.name]);
+
+  final Chunk chunk;
+  int arity;
+  String? name;
+
+  @override
+  String toString() => '<fn ${name ?? '<script>'}>';
 }
 
 void printValue(Value value) {
@@ -81,11 +97,16 @@ void printValue(Value value) {
       printf(value ? 'true' : 'false');
     case Number(:var value):
       printf('%g', [value]);
-    case Obj(:var value):
+    case Obj():
       printObject(value);
   }
 }
 
-void printObject(Object object) {
-  printf('%s', [object]);
+void printObject(Obj object) {
+  switch (object) {
+    case ObjString():
+      printf('%s', [object.value]);
+    case ObjFunction():
+      printf('<fn %s>', [object.name ?? '<script>']);
+  }
 }

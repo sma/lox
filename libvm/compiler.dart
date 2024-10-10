@@ -325,7 +325,7 @@ class Parser {
 
   void string(bool canAssign) {
     var chars = previous.start.substring(1, previous.start.length - 1);
-    emitConstant(Obj(chars));
+    emitConstant(ObjString(chars));
   }
 
   void variable(bool canAssign) {
@@ -496,7 +496,7 @@ class Parser {
   };
 
   int identifierConstant(Token name) {
-    return makeConstant(Obj(name.start));
+    return makeConstant(ObjString(name.start));
   }
 
   void addLocal(Token name) {
