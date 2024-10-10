@@ -28,6 +28,10 @@ int disassembleInstruction(Chunk chunk, int offset) {
       return _simpleInstruction('OP_ FALSE', offset);
     case OpCode.opPop:
       return _simpleInstruction('OP_POP', offset);
+    case OpCode.opGetLocal:
+      return _byteInstruction('OP_GET_LOCAL', chunk, offset);
+    case OpCode.opSetLocal:
+      return _byteInstruction('OP_SET_LOCAL', chunk, offset);
     case OpCode.opGetGlobal:
       return _constantInstruction('OP_GET_GLOBAL', chunk, offset);
     case OpCode.opDefineGlobal:
@@ -70,4 +74,10 @@ int _constantInstruction(String name, Chunk chunk, int offset) {
 int _simpleInstruction(String name, int offset) {
   printf('%s\n', [name]);
   return offset + 1;
+}
+
+int _byteInstruction(String name, Chunk chunk, int offset) {
+  final slot = chunk.code[offset + 1];
+  printf('%-16s %4d\n', [name, slot]);
+  return offset + 2;
 }

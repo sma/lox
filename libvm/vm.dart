@@ -53,6 +53,12 @@ class VM {
           push(const Bool(false));
         case OpCode.opPop:
           pop();
+        case OpCode.opGetLocal:
+          var slot = _readByte();
+          push(stack[slot]);
+        case OpCode.opSetLocal:
+          var slot = _readByte();
+          stack[slot] = _peek(-1);
         case OpCode.opGetGlobal:
           var name = _readString();
           if (!globals.containsKey(name)) {

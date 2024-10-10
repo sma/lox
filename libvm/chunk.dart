@@ -6,6 +6,8 @@ enum OpCode {
   opTrue,
   opFalse,
   opPop,
+  opGetLocal,
+  opSetLocal,
   opGetGlobal,
   opDefineGlobal,
   opSetGlobal,

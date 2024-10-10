@@ -16,6 +16,8 @@ class Parser {
   Token previous = Token.none;
   bool hadError = false;
   bool panicMode = false;
+  int scopeDepth = 0;
+  final locals = <Local>[];
 
   bool compile() {
     advance();
@@ -108,6 +110,19 @@ class Parser {
     }
   }
 
+  void beginScope() {
+    scopeDepth++;
+  }
+
+  void endScope() {
+    scopeDepth--;
+
+    while (locals.isNotEmpty && locals.last.depth > scopeDepth) {
+      emitOp(OpCode.opPop);
+      locals.removeLast();
+    }
+  }
+
   // Parsing rules.
 
   void declaration() {
@@ -136,6 +151,10 @@ class Parser {
   void statement() {
     if (match(TokenType.kPrint)) {
       printStatement();
+    } else if (match(TokenType.leftBrace)) {
+      beginScope();
+      block();
+      endScope();
     } else {
       expressionStatement();
     }
@@ -151,6 +170,14 @@ class Parser {
     expression();
     consume(TokenType.semicolon, "Expect ';' after expression.");
     emitOp(OpCode.opPop);
+  }
+
+  void block() {
+    while (!check(TokenType.rightBrace) && !check(TokenType.eof)) {
+      declaration();
+    }
+
+    consume(TokenType.rightBrace, "Expect '}' after block.");
   }
 
   void synchronize() {
@@ -201,15 +228,37 @@ class Parser {
   }
 
   void namedVariable(Token name, bool canAssign) {
-    var arg = identifierConstant(name);
+    OpCode getOp, setOp;
+    var arg = resolveLocal(name);
+    if (arg != -1) {
+      getOp = OpCode.opGetLocal;
+      setOp = OpCode.opSetLocal;
+    } else {
+      arg = identifierConstant(name);
+      getOp = OpCode.opGetGlobal;
+      setOp = OpCode.opSetGlobal;
+    }
 
     if (canAssign && match(TokenType.equal)) {
       expression();
-      emitOp(OpCode.opSetGlobal);
+      emitOp(setOp);
     } else {
-      emitOp(OpCode.opGetGlobal);
+      emitOp(getOp);
     }
     emitByte(arg);
+  }
+
+  int resolveLocal(Token name) {
+    for (var i = locals.length - 1; i >= 0; i--) {
+      var local = locals[i];
+      if (name.start == local.name.start) {
+        if (local.depth == -1) {
+          error('Cannot read local variable in its own initializer.');
+        }
+        return i;
+      }
+    }
+    return -1;
   }
 
   void unary(bool canAssign) {
@@ -345,12 +394,45 @@ class Parser {
     return makeConstant(Obj(name.start));
   }
 
+  void addLocal(Token name) {
+    if (locals.length == 255) {
+      error('Too many local variables in function.');
+      return;
+    }
+    locals.add(Local(name, -1));
+  }
+
+  void declareVariable() {
+    if (scopeDepth == 0) return;
+    for (var i = locals.length - 1; i >= 0; i--) {
+      var local = locals[i];
+      if (local.depth != -1 && local.depth < scopeDepth) break;
+      if (local.name.start == previous.start) {
+        error('Already a variable with this name in this scope.');
+      }
+    }
+    addLocal(previous);
+  }
+
   int parseVariable(String message) {
     consume(TokenType.identifier, message);
+
+    declareVariable();
+    if (scopeDepth > 0) return 0;
+
     return identifierConstant(previous);
   }
 
+  void markInitialized() {
+    locals.last = Local(locals.last.name, scopeDepth);
+  }
+
   void defineVariable(int global) {
+    if (scopeDepth > 0) {
+      markInitialized();
+      return;
+    }
+
     emitOp(OpCode.opDefineGlobal);
     emitByte(global);
   }
@@ -382,6 +464,13 @@ class ParseRule {
   final ParseFn? prefix;
   final ParseFn? infix;
   final Precedence precedence;
+}
+
+class Local {
+  Local(this.name, this.depth);
+
+  final Token name;
+  final int depth;
 }
 
 void dump(String source) {
