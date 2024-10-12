@@ -89,24 +89,26 @@ class ObjFunction extends Obj {
   String toString() => '<fn ${name ?? '<script>'}>';
 }
 
-void printValue(Value value) {
-  switch (value) {
-    case Nil():
-      printf('nil');
-    case Bool(:var value):
-      printf(value ? 'true' : 'false');
-    case Number(:var value):
-      printf('%g', [value]);
-    case Obj():
-      printObject(value);
+extension ValueExt on StringSink {
+  void printValue(Value value) {
+    switch (value) {
+      case Nil():
+        write('nil');
+      case Bool(:var value):
+        write(value ? 'true' : 'false');
+      case Number(:var value):
+        write(sprintf('%g', [value]));
+      case Obj():
+        printObject(value);
+    }
   }
-}
 
-void printObject(Obj object) {
-  switch (object) {
-    case ObjString():
-      printf('%s', [object.value]);
-    case ObjFunction():
-      printf('<fn %s>', [object.name ?? '<script>']);
+  void printObject(Obj object) {
+    switch (object) {
+      case ObjString():
+        write(sprintf('%s', [object.value]));
+      case ObjFunction():
+        write(sprintf('<fn %s>', [object.name ?? '<script>']));
+    }
   }
 }

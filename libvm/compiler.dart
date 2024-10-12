@@ -1,3 +1,5 @@
+import 'dart:io' show stderr;
+
 import 'chunk.dart';
 import 'debug.dart';
 import 'printf.dart';
@@ -63,15 +65,15 @@ class Compiler {
   void errorAt(Token token, String message) {
     if (panicMode) return;
     panicMode = true;
-    printf('[line %d] Error', [token.line]);
+    stderr.printf('[line %d] Error', [token.line]);
     if (token.type == TokenType.eof) {
-      printf(' at end');
+      stderr.printf(' at end');
     } else if (token.type == TokenType.error) {
       // Nothing.
     } else {
-      printf(" at '%s'", [token.start]);
+      stderr.printf(" at '%s'", [token.start]);
     }
-    printf(': %s\n', [message]);
+    stderr.printf(': %s\n', [message]);
     hadError = true;
   }
 
@@ -601,11 +603,11 @@ void dump(String source) {
     var token = scanner.scanToken();
     if (token.line != line) {
       line = token.line;
-      printf('%04d ', [line]);
+      stderr.printf('%04d ', [line]);
     } else {
-      printf('   | ');
+      stderr.printf('   | ');
     }
-    printf("%10s '%s'\n", [token.type.name, token.start]);
+    stderr.printf("%10s '%s'\n", [token.type.name, token.start]);
 
     if (token.type == TokenType.eof) break;
   }

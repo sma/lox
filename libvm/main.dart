@@ -1,7 +1,9 @@
-import 'dart:io';
+import 'dart:io' show stdin, stdout, stderr, exit, File;
 
 import 'printf.dart';
 import 'vm.dart';
+
+final vm = VM(sink: stdout);
 
 void main(List<String> arguments) {
   if (arguments.isEmpty) {
@@ -9,14 +11,14 @@ void main(List<String> arguments) {
   } else if (arguments.length == 1) {
     runFile(arguments.single);
   } else {
-    printf('Usage: clox [script]\n');
+    stderr.printf('Usage: clox [script]\n');
     exit(64);
   }
 }
 
 void repl() {
   for (;;) {
-    printf('> ');
+    stdout.printf('> ');
     final line = stdin.readLineSync();
     if (line == null) break;
     vm.interpret(line);
@@ -25,7 +27,7 @@ void repl() {
 
 void runFile(String path) {
   if (!File(path).existsSync()) {
-    printf("Could not open file '$path'.\n");
+    stdout.printf("Could not open file '$path'.\n");
     exit(74);
   }
   final source = File(path).readAsStringSync();

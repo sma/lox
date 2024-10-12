@@ -1,20 +1,22 @@
+import 'dart:io' show stderr;
+
 import 'chunk.dart';
 import 'printf.dart';
 import 'value.dart';
 
 void disassembleChunk(Chunk chunk, String name) {
-  printf('== %s ==\n', [name]);
+  stderr.printf('== %s ==\n', [name]);
   for (var offset = 0; offset < chunk.count;) {
     offset = disassembleInstruction(chunk, offset);
   }
 }
 
 int disassembleInstruction(Chunk chunk, int offset) {
-  printf('%04d ', [offset]);
+  stderr.printf('%04d ', [offset]);
   if (offset > 0 && chunk.lines[offset] == chunk.lines[offset - 1]) {
-    printf('   | ');
+    stderr.printf('   | ');
   } else {
-    printf('%4d ', [chunk.lines[offset]]);
+    stderr.printf('%4d ', [chunk.lines[offset]]);
   }
   final instruction = OpCode.values[chunk.code[offset]];
   switch (instruction) {
@@ -71,25 +73,25 @@ int disassembleInstruction(Chunk chunk, int offset) {
 
 int _constantInstruction(String name, Chunk chunk, int offset) {
   final constant = chunk.code[offset + 1];
-  printf("%-16s %4d '", [name, constant]);
-  printValue(chunk.constants[constant]);
-  printf("'\n");
+  stderr.printf("%-16s %4d '", [name, constant]);
+  stderr.printValue(chunk.constants[constant]);
+  stderr.printf("'\n");
   return offset + 2;
 }
 
 int _simpleInstruction(String name, int offset) {
-  printf('%s\n', [name]);
+  stderr.printf('%s\n', [name]);
   return offset + 1;
 }
 
 int _byteInstruction(String name, Chunk chunk, int offset) {
   final slot = chunk.code[offset + 1];
-  printf('%-16s %4d\n', [name, slot]);
+  stderr.printf('%-16s %4d\n', [name, slot]);
   return offset + 2;
 }
 
 int _jumpInstruction(String name, int sign, Chunk chunk, int offset) {
   final jump = (chunk.code[offset + 1] << 8) | chunk.code[offset + 2];
-  printf('%-16s %4d -> %d\n', [name, offset, offset + 3 + sign * jump]);
+  stderr.printf('%-16s %4d -> %d\n', [name, offset, offset + 3 + sign * jump]);
   return offset + 3;
 }

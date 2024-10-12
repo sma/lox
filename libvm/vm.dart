@@ -1,6 +1,6 @@
 import 'compiler.dart';
-import 'debug.dart';
 import 'chunk.dart';
+import 'debug.dart';
 import 'printf.dart';
 import 'scanner.dart';
 import 'value.dart';
@@ -17,6 +17,9 @@ class CallFrame {
 }
 
 class VM {
+  VM({required this.sink});
+
+  final StringSink sink;
   final frames = <CallFrame>[];
   final stack = <Value>[];
   final globals = <String, Value>{};
@@ -40,13 +43,13 @@ class VM {
     var chunk = frame.function.chunk;
     for (;;) {
       if (traceInstructions) {
-        printf('          ');
+        sink.printf('          ');
         for (var i = 0; i < stack.length; i++) {
-          printf('[ ');
-          printValue(stack[i]);
-          printf(' ]');
+          sink.printf('[ ');
+          sink.printValue(stack[i]);
+          sink.printf(' ]');
         }
-        printf('\n');
+        sink.printf('\n');
         disassembleInstruction(chunk, frame.ip);
       }
       final instruction = OpCode.values[_readByte()];
@@ -114,8 +117,7 @@ class VM {
             return InterpreterResult.runtimeError;
           }
         case OpCode.opPrint:
-          printValue(pop());
-          printf('\n');
+          sink.writeln(pop());
         case OpCode.opJump:
           var offset = _readShort(); // must be 2 lines
           frame.ip += offset;
@@ -156,11 +158,9 @@ class VM {
   void _runtimeError(String format, [List<Object?> args = const []]) {
     var frame = frames.last;
     var name = frame.function.name ?? '<script>';
-    printf(format, args);
-    printf('\n');
-    printf('[line %d] in %s\n', [frame.function.chunk.lines[frame.ip - 1], name]);
+    sink.printf(format, args);
+    sink.printf('\n');
+    sink.printf('[line %d] in %s\n', [frame.function.chunk.lines[frame.ip - 1], name]);
     stack.clear();
   }
 }
-
-final vm = VM();
