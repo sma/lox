@@ -32,7 +32,7 @@ class VM {
     final compiler = Compiler(Scanner(source));
     final function = compiler.compile();
     if (function == null) {
-      return InterpreterResult.compileError;
+      return .compileError;
     }
     frames.add(CallFrame(function, [function]));
     return run();
@@ -54,81 +54,81 @@ class VM {
       }
       final instruction = OpCode.values[_readByte()];
       switch (instruction) {
-        case OpCode.opConstant:
+        case .opConstant:
           push(_readConstant());
-        case OpCode.opNil:
+        case .opNil:
           push(const Nil());
-        case OpCode.opTrue:
+        case .opTrue:
           push(const Bool(true));
-        case OpCode.opFalse:
+        case .opFalse:
           push(const Bool(false));
-        case OpCode.opPop:
+        case .opPop:
           pop();
-        case OpCode.opGetLocal:
+        case .opGetLocal:
           var slot = _readByte();
           push(stack[slot]);
-        case OpCode.opSetLocal:
+        case .opSetLocal:
           var slot = _readByte();
           stack[slot] = _peek(-1);
-        case OpCode.opGetGlobal:
+        case .opGetGlobal:
           var name = _readString();
           if (!globals.containsKey(name)) {
             _runtimeError("Undefined variable '%s'.", [name]);
-            return InterpreterResult.runtimeError;
+            return .runtimeError;
           }
           push(globals[name]!);
-        case OpCode.opDefineGlobal:
+        case .opDefineGlobal:
           var name = _readString();
           globals[name] = pop();
-        case OpCode.opSetGlobal:
+        case .opSetGlobal:
           var name = _readString();
           if (!globals.containsKey(name)) {
             _runtimeError("Undefined variable '%s'.", [name]);
-            return InterpreterResult.runtimeError;
+            return .runtimeError;
           }
           globals[name] = _peek(-1);
-        case OpCode.opEqual:
+        case .opEqual:
           push(Bool(pop() == pop()));
-        case OpCode.opGreater:
-          if (_binary((a, b) => Bool(a > b))) return InterpreterResult.runtimeError;
-        case OpCode.opLess:
-          if (_binary((a, b) => Bool(a < b))) return InterpreterResult.runtimeError;
-        case OpCode.opAdd:
+        case .opGreater:
+          if (_binary((a, b) => Bool(a > b))) return .runtimeError;
+        case .opLess:
+          if (_binary((a, b) => Bool(a < b))) return .runtimeError;
+        case .opAdd:
           if ((_peek(-1), _peek(-2)) case (ObjString(), ObjString())) {
             var b = (pop() as ObjString).value;
             var a = (pop() as ObjString).value;
             push(ObjString('$a$b'));
           } else {
-            if (_binary((a, b) => Number(a + b))) return InterpreterResult.runtimeError;
+            if (_binary((a, b) => Number(a + b))) return .runtimeError;
           }
-        case OpCode.opSubtract:
-          if (_binary((a, b) => Number(a - b))) return InterpreterResult.runtimeError;
-        case OpCode.opMultiply:
-          if (_binary((a, b) => Number(a * b))) return InterpreterResult.runtimeError;
-        case OpCode.opDivide:
-          if (_binary((a, b) => Number(a / b))) return InterpreterResult.runtimeError;
-        case OpCode.opNot:
+        case .opSubtract:
+          if (_binary((a, b) => Number(a - b))) return .runtimeError;
+        case .opMultiply:
+          if (_binary((a, b) => Number(a * b))) return .runtimeError;
+        case .opDivide:
+          if (_binary((a, b) => Number(a / b))) return .runtimeError;
+        case .opNot:
           push(Bool(pop().isFalsey));
-        case OpCode.opNegate:
+        case .opNegate:
           if (pop() case Number n) {
             push(Number(-n.value));
           } else {
             _runtimeError('Operand must be a number.');
-            return InterpreterResult.runtimeError;
+            return .runtimeError;
           }
-        case OpCode.opPrint:
+        case .opPrint:
           sink.writeln(pop());
-        case OpCode.opJump:
+        case .opJump:
           var offset = _readShort(); // must be 2 lines
           frame.ip += offset;
-        case OpCode.opJumpIfFalse:
+        case .opJumpIfFalse:
           var offset = _readShort();
           if (_peek(-1).isFalsey) frame.ip += offset;
-        case OpCode.opLoop:
+        case .opLoop:
           var offset = _readShort(); // must be 2 lines
           frame.ip -= offset;
-        case OpCode.opReturn:
-          return InterpreterResult.ok;
+        case .opReturn:
+          return .ok;
       }
     }
   }

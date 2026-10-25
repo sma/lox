@@ -20,53 +20,53 @@ int disassembleInstruction(Chunk chunk, int offset) {
   }
   final instruction = OpCode.values[chunk.code[offset]];
   switch (instruction) {
-    case OpCode.opConstant:
+    case .opConstant:
       return _constantInstruction('OP_CONSTANT', chunk, offset);
-    case OpCode.opNil:
+    case .opNil:
       return _simpleInstruction('OP_NIL', offset);
-    case OpCode.opTrue:
+    case .opTrue:
       return _simpleInstruction('OP_TRUE', offset);
-    case OpCode.opFalse:
+    case .opFalse:
       return _simpleInstruction('OP_FALSE', offset);
-    case OpCode.opPop:
+    case .opPop:
       return _simpleInstruction('OP_POP', offset);
-    case OpCode.opGetLocal:
+    case .opGetLocal:
       return _byteInstruction('OP_GET_LOCAL', chunk, offset);
-    case OpCode.opSetLocal:
+    case .opSetLocal:
       return _byteInstruction('OP_SET_LOCAL', chunk, offset);
-    case OpCode.opGetGlobal:
+    case .opGetGlobal:
       return _constantInstruction('OP_GET_GLOBAL', chunk, offset);
-    case OpCode.opDefineGlobal:
+    case .opDefineGlobal:
       return _constantInstruction('OP_DEFINE_GLOBAL', chunk, offset);
-    case OpCode.opSetGlobal:
+    case .opSetGlobal:
       return _constantInstruction('OP_SET_GLOBAL', chunk, offset);
-    case OpCode.opEqual:
+    case .opEqual:
       return _simpleInstruction('OP_EQUAL', offset);
-    case OpCode.opGreater:
+    case .opGreater:
       return _simpleInstruction('OP_GREATER', offset);
-    case OpCode.opLess:
+    case .opLess:
       return _simpleInstruction('OP_LESS', offset);
-    case OpCode.opAdd:
+    case .opAdd:
       return _simpleInstruction('OP_ADD', offset);
-    case OpCode.opSubtract:
+    case .opSubtract:
       return _simpleInstruction('OP_SUBTRACT', offset);
-    case OpCode.opMultiply:
+    case .opMultiply:
       return _simpleInstruction('OP_MULTIPLY', offset);
-    case OpCode.opDivide:
+    case .opDivide:
       return _simpleInstruction('OP_DIVIDE', offset);
-    case OpCode.opNot:
+    case .opNot:
       return _simpleInstruction('OP_NOT', offset);
-    case OpCode.opNegate:
+    case .opNegate:
       return _simpleInstruction('OP_NEGATE', offset);
-    case OpCode.opPrint:
+    case .opPrint:
       return _simpleInstruction('OP_PRINT', offset);
-    case OpCode.opJump:
+    case .opJump:
       return _jumpInstruction('OP_JUMP', 1, chunk, offset);
-    case OpCode.opJumpIfFalse:
+    case .opJumpIfFalse:
       return _jumpInstruction('OP_JUMP_IF_FALSE', 1, chunk, offset);
-    case OpCode.opLoop:
+    case .opLoop:
       return _jumpInstruction('OP_LOOP', -1, chunk, offset);
-    case OpCode.opReturn:
+    case .opReturn:
       return _simpleInstruction('OP_RETURN', offset);
   }
 }

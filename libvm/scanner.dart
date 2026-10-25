@@ -56,7 +56,7 @@ class Token {
   @override
   String toString() => '${type.name}: "$start" at $line';
 
-  static const none = Token(TokenType.error, '', 0);
+  static const none = Token(.error, '', 0);
 }
 
 class Scanner {
@@ -72,26 +72,26 @@ class Scanner {
 
     start = current;
 
-    if (_isAtEnd) return _makeToken(TokenType.eof);
+    if (_isAtEnd) return _makeToken(.eof);
 
     var c = _advance();
 
     return switch (c) {
-      '(' => _makeToken(TokenType.leftParen),
-      ')' => _makeToken(TokenType.rightParen),
-      '{' => _makeToken(TokenType.leftBrace),
-      '}' => _makeToken(TokenType.rightBrace),
-      ',' => _makeToken(TokenType.comma),
-      '.' => _makeToken(TokenType.dot),
-      '-' => _makeToken(TokenType.minus),
-      '+' => _makeToken(TokenType.plus),
-      ';' => _makeToken(TokenType.semicolon),
-      '/' => _makeToken(TokenType.slash),
-      '*' => _makeToken(TokenType.star),
-      '!' => _makeToken(_match('=') ? TokenType.bangEqual : TokenType.bang),
-      '=' => _makeToken(_match('=') ? TokenType.equalEqual : TokenType.equal),
-      '>' => _makeToken(_match('=') ? TokenType.greaterEqual : TokenType.greater),
-      '<' => _makeToken(_match('=') ? TokenType.lessEqual : TokenType.less),
+      '(' => _makeToken(.leftParen),
+      ')' => _makeToken(.rightParen),
+      '{' => _makeToken(.leftBrace),
+      '}' => _makeToken(.rightBrace),
+      ',' => _makeToken(.comma),
+      '.' => _makeToken(.dot),
+      '-' => _makeToken(.minus),
+      '+' => _makeToken(.plus),
+      ';' => _makeToken(.semicolon),
+      '/' => _makeToken(.slash),
+      '*' => _makeToken(.star),
+      '!' => _makeToken(_match('=') ? .bangEqual : .bang),
+      '=' => _makeToken(_match('=') ? .equalEqual : .equal),
+      '>' => _makeToken(_match('=') ? .greaterEqual : .greater),
+      '<' => _makeToken(_match('=') ? .lessEqual : .less),
       '"' => _string(),
       _ when _isAlpha(c) => _identifier(),
       _ when _isDigit(c) => _number(),
@@ -138,7 +138,7 @@ class Scanner {
 
   Token _makeToken(TokenType type) => Token(type, source.substring(start, current), line);
 
-  Token _errorToken(String message) => Token(TokenType.error, message, line);
+  Token _errorToken(String message) => Token(.error, message, line);
 
   Token _string() {
     while (!_isAtEnd && _peek() != '"') {
@@ -150,7 +150,7 @@ class Scanner {
 
     _advance();
 
-    return _makeToken(TokenType.string);
+    return _makeToken(.string);
   }
 
   Token _number() {
@@ -166,7 +166,7 @@ class Scanner {
         current--;
       }
     }
-    return _makeToken(TokenType.number);
+    return _makeToken(.number);
   }
 
   Token _identifier() {
@@ -174,25 +174,25 @@ class Scanner {
       _advance();
     }
     final name = source.substring(start, current);
-    final types = const {
-      'and': TokenType.kAnd,
-      'class': TokenType.kClass,
-      'else': TokenType.kElse,
-      'false': TokenType.kFalse,
-      'for': TokenType.kFor,
-      'fun': TokenType.kFun,
-      'if': TokenType.kIf,
-      'nil': TokenType.kNil,
-      'or': TokenType.kOr,
-      'print': TokenType.kPrint,
-      'return': TokenType.kReturn,
-      'super': TokenType.kSuper,
-      'this': TokenType.kThis,
-      'true': TokenType.kTrue,
-      'var': TokenType.kVar,
-      'while': TokenType.kWhile,
+    final types = const <String, TokenType>{
+      'and': .kAnd,
+      'class': .kClass,
+      'else': .kElse,
+      'false': .kFalse,
+      'for': .kFor,
+      'fun': .kFun,
+      'if': .kIf,
+      'nil': .kNil,
+      'or': .kOr,
+      'print': .kPrint,
+      'return': .kReturn,
+      'super': .kSuper,
+      'this': .kThis,
+      'true': .kTrue,
+      'var': .kVar,
+      'while': .kWhile,
     };
-    return Token(types[name] ?? TokenType.identifier, name, line);
+    return Token(types[name] ?? .identifier, name, line);
   }
 }
 

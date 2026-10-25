@@ -8,8 +8,8 @@ import 'token.dart';
 class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   final Interpreter interpreter;
   final List<Map<String, bool>> scopes = [];
-  var currentClass = ClassType.NONE;
-  var currentFunction = FunctionType.NONE;
+  ClassType currentClass = .NONE;
+  FunctionType currentFunction = .NONE;
 
   Resolver(this.interpreter);
 
@@ -85,7 +85,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   @override
   void visitClassStmt(Class stmt) {
     var enclosingClass = currentClass;
-    currentClass = ClassType.CLASS;
+    currentClass = .CLASS;
 
     declare(stmt.name);
     define(stmt.name);
@@ -94,7 +94,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       if (stmt.name.lexeme == superclass.name.lexeme) {
         throw RuntimeError(superclass.name, 'A class cannot inherit from itself.');
       }
-      currentClass = ClassType.SUBCLASS;
+      currentClass = .SUBCLASS;
       resolveE(superclass);
 
       beginScope();
@@ -105,10 +105,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     scopes.last['this'] = true;
 
     for (var method in stmt.methods) {
-      var declaration = method.name.lexeme == 'init'
-          ? FunctionType.INITIALIZER
-          : FunctionType.METHOD;
-      resolveFunction(method, declaration);
+      resolveFunction(method, method.name.lexeme == 'init' ? .INITIALIZER : .METHOD);
     }
 
     endScope();
@@ -128,7 +125,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     declare(stmt.name);
     define(stmt.name);
 
-    resolveFunction(stmt, FunctionType.FUNCTION);
+    resolveFunction(stmt, .FUNCTION);
   }
 
   @override
@@ -145,11 +142,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitReturnStmt(Return stmt) {
-    if (currentFunction == FunctionType.NONE) {
+    if (currentFunction == .NONE) {
       throw RuntimeError(stmt.keyword, 'Cannot return from top-level code.');
     }
     if (stmt.value != null) {
-      if (currentFunction == FunctionType.INITIALIZER) {
+      if (currentFunction == .INITIALIZER) {
         throw RuntimeError(stmt.keyword, 'Cannot return a value from an initializer.');
       }
       resolveE(stmt.value!);
@@ -219,9 +216,9 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitSuperExpr(Super expr) {
-    if (currentClass == ClassType.NONE) {
+    if (currentClass == .NONE) {
       throw RuntimeError(expr.keyword, "Cannot use 'super' outside of a class.");
-    } else if (currentClass != ClassType.SUBCLASS) {
+    } else if (currentClass != .SUBCLASS) {
       throw RuntimeError(expr.keyword, "Cannot use 'super' in a class with no superclass.");
     }
     resolveLocal(expr, expr.keyword);
@@ -229,7 +226,7 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitThisExpr(This expr) {
-    if (currentClass == ClassType.NONE) {
+    if (currentClass == .NONE) {
       throw RuntimeError(expr.keyword, "Cannot use 'this' outside of a class.");
     }
 

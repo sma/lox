@@ -17,7 +17,7 @@ class Scanner {
       _scanToken();
     }
 
-    _tokens.add(Token(TokenType.EOF, '', null, _line));
+    _tokens.add(Token(.EOF, '', null, _line));
     return _tokens;
   }
 
@@ -27,46 +27,46 @@ class Scanner {
     var c = _advance();
     switch (c) {
       case '(':
-        _addToken(TokenType.LEFT_PAREN);
+        _addToken(.LEFT_PAREN);
         break;
       case ')':
-        _addToken(TokenType.RIGHT_PAREN);
+        _addToken(.RIGHT_PAREN);
         break;
       case '{':
-        _addToken(TokenType.LEFT_BRACE);
+        _addToken(.LEFT_BRACE);
         break;
       case '}':
-        _addToken(TokenType.RIGHT_BRACE);
+        _addToken(.RIGHT_BRACE);
         break;
       case ',':
-        _addToken(TokenType.COMMA);
+        _addToken(.COMMA);
         break;
       case '.':
-        _addToken(TokenType.DOT);
+        _addToken(.DOT);
         break;
       case '-':
-        _addToken(TokenType.MINUS);
+        _addToken(.MINUS);
         break;
       case '+':
-        _addToken(TokenType.PLUS);
+        _addToken(.PLUS);
         break;
       case ';':
-        _addToken(TokenType.SEMICOLON);
+        _addToken(.SEMICOLON);
         break;
       case '*':
-        _addToken(TokenType.STAR);
+        _addToken(.STAR);
         break;
       case '!':
-        _addToken(_match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
+        _addToken(_match('=') ? .BANG_EQUAL : .BANG);
         break;
       case '=':
-        _addToken(_match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+        _addToken(_match('=') ? .EQUAL_EQUAL : .EQUAL);
         break;
       case '<':
-        _addToken(_match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+        _addToken(_match('=') ? .LESS_EQUAL : .LESS);
         break;
       case '>':
-        _addToken(_match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
+        _addToken(_match('=') ? .GREATER_EQUAL : .GREATER);
         break;
       case '/':
         if (_match('/')) {
@@ -75,7 +75,7 @@ class Scanner {
             _advance();
           }
         } else {
-          _addToken(TokenType.SLASH);
+          _addToken(.SLASH);
         }
         break;
 
@@ -99,7 +99,7 @@ class Scanner {
           _identifier();
         } else {
           throw RuntimeError(
-            Token(TokenType.IDENTIFIER, c, null, _line),
+            Token(.IDENTIFIER, c, null, _line),
             'Unexpected character.',
           );
         }
@@ -114,7 +114,7 @@ class Scanner {
     // See if the identifier is a reserved word.
     var text = _source.substring(_start, _current);
 
-    _addToken(keywords[text] ?? TokenType.IDENTIFIER);
+    _addToken(keywords[text] ?? .IDENTIFIER);
   }
 
   void _number() {
@@ -132,7 +132,7 @@ class Scanner {
       }
     }
 
-    _addToken(TokenType.NUMBER, double.parse(_source.substring(_start, _current)));
+    _addToken(.NUMBER, double.parse(_source.substring(_start, _current)));
   }
 
   void _string() {
@@ -144,7 +144,7 @@ class Scanner {
     // Unterminated string.
     if (_isAtEnd) {
       throw RuntimeError(
-        Token(TokenType.EOF, '', null, _line),
+        Token(.EOF, '', null, _line),
         'Unterminated string.',
       );
     }
@@ -154,7 +154,7 @@ class Scanner {
 
     // Trim the surrounding quotes.
     var value = _source.substring(_start + 1, _current - 1);
-    _addToken(TokenType.STRING, value);
+    _addToken(.STRING, value);
   }
 
   bool _match(String expected) {
@@ -199,21 +199,21 @@ class Scanner {
   }
 
   static const keywords = <String, TokenType>{
-    'and': TokenType.AND,
-    'class': TokenType.CLASS,
-    'else': TokenType.ELSE,
-    'false': TokenType.FALSE,
-    'for': TokenType.FOR,
-    'fun': TokenType.FUN,
-    'if': TokenType.IF,
-    'nil': TokenType.NIL,
-    'or': TokenType.OR,
-    'print': TokenType.PRINT,
-    'return': TokenType.RETURN,
-    'super': TokenType.SUPER,
-    'this': TokenType.THIS,
-    'true': TokenType.TRUE,
-    'var': TokenType.VAR,
-    'while': TokenType.WHILE,
+    'and': .AND,
+    'class': .CLASS,
+    'else': .ELSE,
+    'false': .FALSE,
+    'for': .FOR,
+    'fun': .FUN,
+    'if': .IF,
+    'nil': .NIL,
+    'or': .OR,
+    'print': .PRINT,
+    'return': .RETURN,
+    'super': .SUPER,
+    'this': .THIS,
+    'true': .TRUE,
+    'var': .VAR,
+    'while': .WHILE,
   };
 }

@@ -22,68 +22,68 @@ class Parser {
   }
 
   Stmt declaration() {
-    if (match(CLASS)) return classDeclaration();
-    if (match(FUN)) return function('function');
-    if (match(VAR)) return varDeclaration();
+    if (match(.CLASS)) return classDeclaration();
+    if (match(.FUN)) return function('function');
+    if (match(.VAR)) return varDeclaration();
 
     return statement();
   }
 
   Stmt classDeclaration() {
-    var name = consume(IDENTIFIER, 'Expect class name.');
+    var name = consume(.IDENTIFIER, 'Expect class name.');
 
     Variable? superclass;
-    if (match(LESS)) {
-      consume(IDENTIFIER, 'Expect superclass name.');
+    if (match(.LESS)) {
+      consume(.IDENTIFIER, 'Expect superclass name.');
       superclass = Variable(previous());
     }
 
-    consume(LEFT_BRACE, "Expect '{' before class body.");
+    consume(.LEFT_BRACE, "Expect '{' before class body.");
 
     var methods = <Func>[];
-    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+    while (!check(.RIGHT_BRACE) && !isAtEnd()) {
       methods.add(function('method'));
     }
 
-    consume(RIGHT_BRACE, "Expect '}' after class body.");
+    consume(.RIGHT_BRACE, "Expect '}' after class body.");
 
     return Class(name, superclass, methods);
   }
 
   Stmt statement() {
-    if (match(FOR)) return forStatement();
-    if (match(IF)) return ifStatement();
-    if (match(PRINT)) return printStatement();
-    if (match(RETURN)) return returnStatement();
-    if (match(WHILE)) return whileStatement();
-    if (match(LEFT_BRACE)) return Block(block());
+    if (match(.FOR)) return forStatement();
+    if (match(.IF)) return ifStatement();
+    if (match(.PRINT)) return printStatement();
+    if (match(.RETURN)) return returnStatement();
+    if (match(.WHILE)) return whileStatement();
+    if (match(.LEFT_BRACE)) return Block(block());
 
     return expressionStatement();
   }
 
   Stmt forStatement() {
-    consume(LEFT_PAREN, "Expect '(' after 'for'.");
+    consume(.LEFT_PAREN, "Expect '(' after 'for'.");
 
     Stmt? initializer;
-    if (match(SEMICOLON)) {
+    if (match(.SEMICOLON)) {
       initializer = null;
-    } else if (match(VAR)) {
+    } else if (match(.VAR)) {
       initializer = varDeclaration();
     } else {
       initializer = expressionStatement();
     }
 
     Expr? condition;
-    if (!check(SEMICOLON)) {
+    if (!check(.SEMICOLON)) {
       condition = expression();
     }
-    consume(SEMICOLON, "Expect ';' after loop condition.");
+    consume(.SEMICOLON, "Expect ';' after loop condition.");
 
     Expr? increment;
-    if (!check(RIGHT_PAREN)) {
+    if (!check(.RIGHT_PAREN)) {
       increment = expression();
     }
-    consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+    consume(.RIGHT_PAREN, "Expect ')' after for clauses.");
     var body = statement();
 
     if (increment != null) {
@@ -103,46 +103,46 @@ class Parser {
   }
 
   Stmt ifStatement() {
-    consume(LEFT_PAREN, "Expect '(' after 'if'.");
+    consume(.LEFT_PAREN, "Expect '(' after 'if'.");
     var condition = expression();
-    consume(RIGHT_PAREN, "Expect ')' after if condition.");
+    consume(.RIGHT_PAREN, "Expect ')' after if condition.");
 
     var thenBranch = statement();
-    var elseBranch = match(ELSE) ? statement() : null;
+    var elseBranch = match(.ELSE) ? statement() : null;
 
     return If(condition, thenBranch, elseBranch);
   }
 
   Stmt printStatement() {
     var value = expression();
-    consume(SEMICOLON, "Expect ';' after value.");
+    consume(.SEMICOLON, "Expect ';' after value.");
     return Print(value);
   }
 
   Stmt returnStatement() {
     var keyword = previous();
-    var value = check(SEMICOLON) ? null : expression();
+    var value = check(.SEMICOLON) ? null : expression();
 
-    consume(SEMICOLON, "Expect ';' after return value.");
+    consume(.SEMICOLON, "Expect ';' after return value.");
     return Return(keyword, value);
   }
 
   Stmt varDeclaration() {
-    var name = consume(IDENTIFIER, 'Expect variable name.');
+    var name = consume(.IDENTIFIER, 'Expect variable name.');
 
     Expr? initializer;
-    if (match(EQUAL)) {
+    if (match(.EQUAL)) {
       initializer = expression();
     }
 
-    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    consume(.SEMICOLON, "Expect ';' after variable declaration.");
     return Var(name, initializer);
   }
 
   Stmt whileStatement() {
-    consume(LEFT_PAREN, "Expect '(' after 'while'.");
+    consume(.LEFT_PAREN, "Expect '(' after 'while'.");
     var condition = expression();
-    consume(RIGHT_PAREN, "Expect ')' after condition.");
+    consume(.RIGHT_PAREN, "Expect ')' after condition.");
     var body = statement();
 
     return While(condition, body);
@@ -150,26 +150,26 @@ class Parser {
 
   Stmt expressionStatement() {
     var expr = expression();
-    consume(SEMICOLON, "Expect ';' after expression.");
+    consume(.SEMICOLON, "Expect ';' after expression.");
     return Expression(expr);
   }
 
   Func function(String kind) {
-    var name = consume(IDENTIFIER, 'Expect $kind name.');
-    consume(LEFT_PAREN, "Expect '(' after $kind name.");
+    var name = consume(.IDENTIFIER, 'Expect $kind name.');
+    consume(.LEFT_PAREN, "Expect '(' after $kind name.");
     var parameters = <Token>[];
-    if (!check(RIGHT_PAREN)) {
+    if (!check(.RIGHT_PAREN)) {
       do {
         if (parameters.length >= 255) {
           throw error(peek(), 'Cannot have more than 255 parameters.');
         }
 
-        parameters.add(consume(IDENTIFIER, 'Expect parameter name.'));
-      } while (match(COMMA));
+        parameters.add(consume(.IDENTIFIER, 'Expect parameter name.'));
+      } while (match(.COMMA));
     }
-    consume(RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(.RIGHT_PAREN, "Expect ')' after parameters.");
 
-    consume(LEFT_BRACE, "Expect '{' before $kind body.");
+    consume(.LEFT_BRACE, "Expect '{' before $kind body.");
     var body = block();
     return Func(name, parameters, body);
   }
@@ -177,18 +177,18 @@ class Parser {
   List<Stmt> block() {
     var statements = <Stmt>[];
 
-    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+    while (!check(.RIGHT_BRACE) && !isAtEnd()) {
       statements.add(declaration());
     }
 
-    consume(RIGHT_BRACE, "Expect '}' after block.");
+    consume(.RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   }
 
   Expr assignment() {
     var expr = or();
 
-    if (match(EQUAL)) {
+    if (match(.EQUAL)) {
       var equals = previous();
       var value = assignment();
 
@@ -208,7 +208,7 @@ class Parser {
   Expr or() {
     var expr = and();
 
-    while (match(OR)) {
+    while (match(.OR)) {
       var operator = previous();
       var right = and();
       expr = Logical(expr, operator, right);
@@ -220,7 +220,7 @@ class Parser {
   Expr and() {
     var expr = equality();
 
-    while (match(AND)) {
+    while (match(.AND)) {
       var operator = previous();
       var right = equality();
       expr = Logical(expr, operator, right);
@@ -232,7 +232,7 @@ class Parser {
   Expr equality() {
     var expr = comparison();
 
-    while (match(BANG_EQUAL, EQUAL_EQUAL)) {
+    while (match(.BANG_EQUAL, .EQUAL_EQUAL)) {
       var operator = previous();
       var right = comparison();
       expr = Binary(expr, operator, right);
@@ -244,7 +244,7 @@ class Parser {
   Expr comparison() {
     var expr = addition();
 
-    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+    while (match(.GREATER, .GREATER_EQUAL, .LESS, .LESS_EQUAL)) {
       var operator = previous();
       var right = addition();
       expr = Binary(expr, operator, right);
@@ -256,7 +256,7 @@ class Parser {
   Expr addition() {
     var expr = multiplication();
 
-    while (match(MINUS, PLUS)) {
+    while (match(.MINUS, .PLUS)) {
       var operator = previous();
       var right = multiplication();
       expr = Binary(expr, operator, right);
@@ -268,7 +268,7 @@ class Parser {
   Expr multiplication() {
     var expr = unary();
 
-    while (match(SLASH, STAR)) {
+    while (match(.SLASH, .STAR)) {
       var operator = previous();
       var right = unary();
       expr = Binary(expr, operator, right);
@@ -278,7 +278,7 @@ class Parser {
   }
 
   Expr unary() {
-    if (match(BANG, MINUS)) {
+    if (match(.BANG, .MINUS)) {
       var operator = previous();
       var right = unary();
       return Unary(operator, right);
@@ -291,10 +291,10 @@ class Parser {
     var expr = primary();
 
     while (true) {
-      if (match(LEFT_PAREN)) {
+      if (match(.LEFT_PAREN)) {
         expr = finishCall(expr);
-      } else if (match(DOT)) {
-        var name = consume(IDENTIFIER, "Expect property name after '.'.");
+      } else if (match(.DOT)) {
+        var name = consume(.IDENTIFIER, "Expect property name after '.'.");
         expr = Get(expr, name);
       } else {
         break;
@@ -306,45 +306,45 @@ class Parser {
 
   Expr finishCall(Expr callee) {
     var arguments = <Expr>[];
-    if (!check(RIGHT_PAREN)) {
+    if (!check(.RIGHT_PAREN)) {
       do {
         if (arguments.length >= 255) {
           throw error(peek(), 'Cannot have more than 255 arguments.');
         }
         arguments.add(expression());
-      } while (match(COMMA));
+      } while (match(.COMMA));
     }
 
-    var paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+    var paren = consume(.RIGHT_PAREN, "Expect ')' after arguments.");
 
     return Call(callee, paren, arguments);
   }
 
   Expr primary() {
-    if (match(FALSE)) return Literal(false);
-    if (match(TRUE)) return Literal(true);
-    if (match(NIL)) return Literal(null);
+    if (match(.FALSE)) return Literal(false);
+    if (match(.TRUE)) return Literal(true);
+    if (match(.NIL)) return Literal(null);
 
-    if (match(NUMBER, STRING)) {
+    if (match(.NUMBER, .STRING)) {
       return Literal(previous().literal);
     }
 
-    if (match(SUPER)) {
+    if (match(.SUPER)) {
       var keyword = previous();
-      consume(DOT, "Expect '.' after 'super'.");
-      var method = consume(IDENTIFIER, 'Expect superclass method name.');
+      consume(.DOT, "Expect '.' after 'super'.");
+      var method = consume(.IDENTIFIER, 'Expect superclass method name.');
       return Super(keyword, method);
     }
 
-    if (match(THIS)) return This(previous());
+    if (match(.THIS)) return This(previous());
 
-    if (match(IDENTIFIER)) {
+    if (match(.IDENTIFIER)) {
       return Variable(previous());
     }
 
-    if (match(LEFT_PAREN)) {
+    if (match(.LEFT_PAREN)) {
       var expr = expression();
-      consume(RIGHT_PAREN, "Expect ')' after expression.");
+      consume(.RIGHT_PAREN, "Expect ')' after expression.");
       return Grouping(expr);
     }
 
@@ -379,7 +379,7 @@ class Parser {
   }
 
   bool isAtEnd() {
-    return peek().type == EOF;
+    return peek().type == .EOF;
   }
 
   Token peek() {
@@ -398,17 +398,17 @@ class Parser {
     advance();
 
     while (!isAtEnd()) {
-      if (previous().type == SEMICOLON) return;
+      if (previous().type == .SEMICOLON) return;
 
       switch (peek().type) {
-        case CLASS:
-        case FUN:
-        case VAR:
-        case FOR:
-        case IF:
-        case WHILE:
-        case PRINT:
-        case RETURN:
+        case .CLASS:
+        case .FUN:
+        case .VAR:
+        case .FOR:
+        case .IF:
+        case .WHILE:
+        case .PRINT:
+        case .RETURN:
           return;
         default:
           advance();

@@ -24,11 +24,11 @@ class Compiler {
   ObjFunction? compile() {
     advance();
 
-    while (!match(TokenType.eof)) {
+    while (!match(.eof)) {
       declaration();
     }
 
-    consume(TokenType.eof, 'Expect end of expression.');
+    consume(.eof, 'Expect end of expression.');
     endCompiler();
     return !hadError ? ObjFunction(chunk) : null;
   }
@@ -37,7 +37,7 @@ class Compiler {
     previous = current;
     for (;;) {
       current = scanner.scanToken();
-      if (current.type != TokenType.error) break;
+      if (current.type != .error) break;
       errorAtCurrent(current.start);
     }
   }
@@ -66,9 +66,9 @@ class Compiler {
     if (panicMode) return;
     panicMode = true;
     stderr.printf('[line %d] Error', [token.line]);
-    if (token.type == TokenType.eof) {
+    if (token.type == .eof) {
       stderr.printf(' at end');
-    } else if (token.type == TokenType.error) {
+    } else if (token.type == .error) {
       // Nothing.
     } else {
       stderr.printf(" at '%s'", [token.start]);
@@ -88,7 +88,7 @@ class Compiler {
   }
 
   void emitReturn() {
-    emitOp(OpCode.opReturn);
+    emitOp(.opReturn);
   }
 
   int emitJump(OpCode op) {
@@ -108,12 +108,12 @@ class Compiler {
   }
 
   void emitConstant(Value value) {
-    emitOp(OpCode.opConstant);
+    emitOp(.opConstant);
     emitByte(makeConstant(value));
   }
 
   void emitLoop(int offset) {
-    emitOp(OpCode.opLoop);
+    emitOp(.opLoop);
     var jump = chunk.count - offset + 2;
     if (jump > 65535) {
       error('Loop body too large.');
@@ -146,7 +146,7 @@ class Compiler {
     scopeDepth--;
 
     while (locals.isNotEmpty && locals.last.depth > scopeDepth) {
-      emitOp(OpCode.opPop);
+      emitOp(.opPop);
       locals.removeLast();
     }
   }
@@ -154,7 +154,7 @@ class Compiler {
   // Parsing rules.
 
   void declaration() {
-    if (match(TokenType.kVar)) {
+    if (match(.kVar)) {
       varDeclaration();
     } else {
       statement();
@@ -166,26 +166,26 @@ class Compiler {
   void varDeclaration() {
     var global = parseVariable('Expect variable name.');
 
-    if (match(TokenType.equal)) {
+    if (match(.equal)) {
       expression();
     } else {
-      emitOp(OpCode.opNil);
+      emitOp(.opNil);
     }
-    consume(TokenType.semicolon, "Expect ';' after variable declaration.");
+    consume(.semicolon, "Expect ';' after variable declaration.");
 
     defineVariable(global);
   }
 
   void statement() {
-    if (match(TokenType.kPrint)) {
+    if (match(.kPrint)) {
       printStatement();
-    } else if (match(TokenType.kFor)) {
+    } else if (match(.kFor)) {
       forStatement();
-    } else if (match(TokenType.kIf)) {
+    } else if (match(.kIf)) {
       ifStatement();
-    } else if (match(TokenType.kWhile)) {
+    } else if (match(.kWhile)) {
       whileStatement();
-    } else if (match(TokenType.leftBrace)) {
+    } else if (match(.leftBrace)) {
       beginScope();
       block();
       endScope();
@@ -196,17 +196,17 @@ class Compiler {
 
   void printStatement() {
     expression();
-    consume(TokenType.semicolon, "Expect ';' after value.");
-    emitOp(OpCode.opPrint);
+    consume(.semicolon, "Expect ';' after value.");
+    emitOp(.opPrint);
   }
 
   void forStatement() {
     beginScope();
-    consume(TokenType.leftParen, "Expect '(' after 'for'.");
+    consume(.leftParen, "Expect '(' after 'for'.");
 
-    if (match(TokenType.semicolon)) {
+    if (match(.semicolon)) {
       // No initializer.
-    } else if (match(TokenType.kVar)) {
+    } else if (match(.kVar)) {
       varDeclaration();
     } else {
       expressionStatement();
@@ -214,21 +214,21 @@ class Compiler {
 
     var loopStart = chunk.count;
     var exitJump = -1;
-    if (!match(TokenType.semicolon)) {
+    if (!match(.semicolon)) {
       expression();
-      consume(TokenType.semicolon, "Expect ';' after loop condition.");
+      consume(.semicolon, "Expect ';' after loop condition.");
 
       // Jump out of the loop if the condition is false.
-      exitJump = emitJump(OpCode.opJumpIfFalse);
-      emitOp(OpCode.opPop); // Condition.
+      exitJump = emitJump(.opJumpIfFalse);
+      emitOp(.opPop); // Condition.
     }
 
-    if (!match(TokenType.rightParen)) {
-      var bodyJump = emitJump(OpCode.opJump);
+    if (!match(.rightParen)) {
+      var bodyJump = emitJump(.opJump);
       var incrementStart = chunk.count;
       expression();
-      emitOp(OpCode.opPop);
-      consume(TokenType.rightParen, "Expect ')' after for clauses.");
+      emitOp(.opPop);
+      consume(.rightParen, "Expect ')' after for clauses.");
 
       emitLoop(loopStart);
       loopStart = incrementStart;
@@ -240,68 +240,68 @@ class Compiler {
 
     if (exitJump != -1) {
       patchJump(exitJump);
-      emitOp(OpCode.opPop); // Condition.
+      emitOp(.opPop); // Condition.
     }
 
     endScope();
   }
 
   void ifStatement() {
-    consume(TokenType.leftParen, "Expect '(' after 'if'.");
+    consume(.leftParen, "Expect '(' after 'if'.");
     expression();
-    consume(TokenType.rightParen, "Expect ')' after condition.");
-    var thenJump = emitJump(OpCode.opJumpIfFalse);
-    emitOp(OpCode.opPop);
+    consume(.rightParen, "Expect ')' after condition.");
+    var thenJump = emitJump(.opJumpIfFalse);
+    emitOp(.opPop);
     statement();
-    var elseJump = emitJump(OpCode.opJump);
+    var elseJump = emitJump(.opJump);
     patchJump(thenJump);
-    emitOp(OpCode.opPop);
-    if (match(TokenType.kElse)) statement();
+    emitOp(.opPop);
+    if (match(.kElse)) statement();
     patchJump(elseJump);
   }
 
   void whileStatement() {
     var loopStart = chunk.count;
-    consume(TokenType.leftParen, "Expect '(' after 'while'.");
+    consume(.leftParen, "Expect '(' after 'while'.");
     expression();
-    consume(TokenType.rightParen, "Expect ')' after condition.");
-    var exitJump = emitJump(OpCode.opJumpIfFalse);
-    emitOp(OpCode.opPop);
+    consume(.rightParen, "Expect ')' after condition.");
+    var exitJump = emitJump(.opJumpIfFalse);
+    emitOp(.opPop);
     statement();
     emitLoop(loopStart);
     patchJump(exitJump);
-    emitOp(OpCode.opPop);
+    emitOp(.opPop);
   }
 
   void expressionStatement() {
     expression();
-    consume(TokenType.semicolon, "Expect ';' after expression.");
-    emitOp(OpCode.opPop);
+    consume(.semicolon, "Expect ';' after expression.");
+    emitOp(.opPop);
   }
 
   void block() {
-    while (!check(TokenType.rightBrace) && !check(TokenType.eof)) {
+    while (!check(.rightBrace) && !check(.eof)) {
       declaration();
     }
 
-    consume(TokenType.rightBrace, "Expect '}' after block.");
+    consume(.rightBrace, "Expect '}' after block.");
   }
 
   void synchronize() {
     panicMode = false;
 
-    while (current.type != TokenType.eof) {
-      if (previous.type == TokenType.semicolon) return;
+    while (current.type != .eof) {
+      if (previous.type == .semicolon) return;
 
       switch (current.type) {
-        case TokenType.kClass:
-        case TokenType.kFun:
-        case TokenType.kVar:
-        case TokenType.kFor:
-        case TokenType.kIf:
-        case TokenType.kWhile:
-        case TokenType.kPrint:
-        case TokenType.kReturn:
+        case .kClass:
+        case .kFun:
+        case .kVar:
+        case .kFor:
+        case .kIf:
+        case .kWhile:
+        case .kPrint:
+        case .kReturn:
           return;
         default:
           // Do nothing.
@@ -313,12 +313,12 @@ class Compiler {
   }
 
   void expression() {
-    parsePrecedence(Precedence.assignment);
+    parsePrecedence(.assignment);
   }
 
   void grouping(bool canAssign) {
     expression();
-    consume(TokenType.rightParen, "Expect ')' after expression.");
+    consume(.rightParen, "Expect ')' after expression.");
   }
 
   void number(bool canAssign) {
@@ -338,15 +338,15 @@ class Compiler {
     OpCode getOp, setOp;
     var arg = resolveLocal(name);
     if (arg != -1) {
-      getOp = OpCode.opGetLocal;
-      setOp = OpCode.opSetLocal;
+      getOp = .opGetLocal;
+      setOp = .opSetLocal;
     } else {
       arg = identifierConstant(name);
-      getOp = OpCode.opGetGlobal;
-      setOp = OpCode.opSetGlobal;
+      getOp = .opGetGlobal;
+      setOp = .opSetGlobal;
     }
 
-    if (canAssign && match(TokenType.equal)) {
+    if (canAssign && match(.equal)) {
       expression();
       emitOp(setOp);
     } else {
@@ -372,14 +372,14 @@ class Compiler {
     var operatorType = previous.type;
 
     // Compile the operand.
-    parsePrecedence(Precedence.unary);
+    parsePrecedence(.unary);
 
     // Emit the operator instruction.
     switch (operatorType) {
-      case TokenType.minus:
-        emitOp(OpCode.opNegate);
-      case TokenType.bang:
-        emitOp(OpCode.opNot);
+      case .minus:
+        emitOp(.opNegate);
+      case .bang:
+        emitOp(.opNot);
       default:
         return; // Unreachable.
     }
@@ -390,29 +390,29 @@ class Compiler {
     var rule = getRule(operatorType);
     parsePrecedence(rule.precedence.next);
     switch (operatorType) {
-      case TokenType.bangEqual:
-        emitOp(OpCode.opEqual);
-        emitOp(OpCode.opNot);
-      case TokenType.equalEqual:
-        emitOp(OpCode.opEqual);
-      case TokenType.greater:
-        emitOp(OpCode.opGreater);
-      case TokenType.greaterEqual:
-        emitOp(OpCode.opLess);
-        emitOp(OpCode.opNot);
-      case TokenType.less:
-        emitOp(OpCode.opLess);
-      case TokenType.lessEqual:
-        emitOp(OpCode.opGreater);
-        emitOp(OpCode.opNot);
-      case TokenType.plus:
-        emitOp(OpCode.opAdd);
-      case TokenType.minus:
-        emitOp(OpCode.opSubtract);
-      case TokenType.star:
-        emitOp(OpCode.opMultiply);
-      case TokenType.slash:
-        emitOp(OpCode.opDivide);
+      case .bangEqual:
+        emitOp(.opEqual);
+        emitOp(.opNot);
+      case .equalEqual:
+        emitOp(.opEqual);
+      case .greater:
+        emitOp(.opGreater);
+      case .greaterEqual:
+        emitOp(.opLess);
+        emitOp(.opNot);
+      case .less:
+        emitOp(.opLess);
+      case .lessEqual:
+        emitOp(.opGreater);
+        emitOp(.opNot);
+      case .plus:
+        emitOp(.opAdd);
+      case .minus:
+        emitOp(.opSubtract);
+      case .star:
+        emitOp(.opMultiply);
+      case .slash:
+        emitOp(.opDivide);
       default:
         return; // Unreachable.
     }
@@ -420,12 +420,12 @@ class Compiler {
 
   void literal(bool canAssign) {
     switch (previous.type) {
-      case TokenType.kFalse:
-        emitOp(OpCode.opFalse);
-      case TokenType.kTrue:
-        emitOp(OpCode.opTrue);
-      case TokenType.kNil:
-        emitOp(OpCode.opNil);
+      case .kFalse:
+        emitOp(.opFalse);
+      case .kTrue:
+        emitOp(.opTrue);
+      case .kNil:
+        emitOp(.opNil);
       default:
         return; // Unreachable.
     }
@@ -439,7 +439,7 @@ class Compiler {
       return;
     }
 
-    var canAssign = precedence <= Precedence.assignment;
+    var canAssign = precedence <= .assignment;
     prefixRule(canAssign);
 
     while (precedence <= getRule(current.type).precedence) {
@@ -447,7 +447,7 @@ class Compiler {
       getRule(previous.type).infix!(canAssign);
     }
 
-    if (canAssign && match(TokenType.equal)) {
+    if (canAssign && match(.equal)) {
       error('Invalid assignment target.');
     }
   }
@@ -455,46 +455,46 @@ class Compiler {
   ParseRule getRule(TokenType type) => _rules[type]!;
 
   late final _rules = <TokenType, ParseRule>{
-    TokenType.leftParen: ParseRule(grouping, null, Precedence.none),
-    TokenType.rightParen: ParseRule(null, null, Precedence.none),
-    TokenType.leftBrace: ParseRule(null, null, Precedence.none),
-    TokenType.rightBrace: ParseRule(null, null, Precedence.none),
-    TokenType.comma: ParseRule(null, null, Precedence.none),
-    TokenType.dot: ParseRule(null, null, Precedence.none),
-    TokenType.minus: ParseRule(unary, binary, Precedence.term),
-    TokenType.plus: ParseRule(null, binary, Precedence.term),
-    TokenType.semicolon: ParseRule(null, null, Precedence.none),
-    TokenType.slash: ParseRule(null, binary, Precedence.factor),
-    TokenType.star: ParseRule(null, binary, Precedence.factor),
-    TokenType.bang: ParseRule(unary, null, Precedence.none),
-    TokenType.bangEqual: ParseRule(null, binary, Precedence.equality),
-    TokenType.equal: ParseRule(null, null, Precedence.none),
-    TokenType.equalEqual: ParseRule(null, binary, Precedence.equality),
-    TokenType.greater: ParseRule(null, binary, Precedence.comparison),
-    TokenType.greaterEqual: ParseRule(null, binary, Precedence.comparison),
-    TokenType.less: ParseRule(null, binary, Precedence.comparison),
-    TokenType.lessEqual: ParseRule(null, binary, Precedence.comparison),
-    TokenType.identifier: ParseRule(variable, null, Precedence.none),
-    TokenType.string: ParseRule(string, null, Precedence.none),
-    TokenType.number: ParseRule(number, null, Precedence.none),
-    TokenType.kAnd: ParseRule(null, and_, Precedence.and),
-    TokenType.kClass: ParseRule(null, null, Precedence.none),
-    TokenType.kElse: ParseRule(null, null, Precedence.none),
-    TokenType.kFalse: ParseRule(literal, null, Precedence.none),
-    TokenType.kFor: ParseRule(null, null, Precedence.none),
-    TokenType.kFun: ParseRule(null, null, Precedence.none),
-    TokenType.kIf: ParseRule(null, null, Precedence.none),
-    TokenType.kNil: ParseRule(literal, null, Precedence.none),
-    TokenType.kOr: ParseRule(null, or_, Precedence.or),
-    TokenType.kPrint: ParseRule(null, null, Precedence.none),
-    TokenType.kReturn: ParseRule(null, null, Precedence.none),
-    TokenType.kSuper: ParseRule(null, null, Precedence.none),
-    TokenType.kThis: ParseRule(null, null, Precedence.none),
-    TokenType.kTrue: ParseRule(literal, null, Precedence.none),
-    TokenType.kVar: ParseRule(null, null, Precedence.none),
-    TokenType.kWhile: ParseRule(null, null, Precedence.none),
-    TokenType.error: ParseRule(null, null, Precedence.none),
-    TokenType.eof: ParseRule(null, null, Precedence.none),
+    .leftParen: ParseRule(grouping, null, .none),
+    .rightParen: ParseRule(null, null, .none),
+    .leftBrace: ParseRule(null, null, .none),
+    .rightBrace: ParseRule(null, null, .none),
+    .comma: ParseRule(null, null, .none),
+    .dot: ParseRule(null, null, .none),
+    .minus: ParseRule(unary, binary, .term),
+    .plus: ParseRule(null, binary, .term),
+    .semicolon: ParseRule(null, null, .none),
+    .slash: ParseRule(null, binary, .factor),
+    .star: ParseRule(null, binary, .factor),
+    .bang: ParseRule(unary, null, .none),
+    .bangEqual: ParseRule(null, binary, .equality),
+    .equal: ParseRule(null, null, .none),
+    .equalEqual: ParseRule(null, binary, .equality),
+    .greater: ParseRule(null, binary, .comparison),
+    .greaterEqual: ParseRule(null, binary, .comparison),
+    .less: ParseRule(null, binary, .comparison),
+    .lessEqual: ParseRule(null, binary, .comparison),
+    .identifier: ParseRule(variable, null, .none),
+    .string: ParseRule(string, null, .none),
+    .number: ParseRule(number, null, .none),
+    .kAnd: ParseRule(null, and_, .and),
+    .kClass: ParseRule(null, null, .none),
+    .kElse: ParseRule(null, null, .none),
+    .kFalse: ParseRule(literal, null, .none),
+    .kFor: ParseRule(null, null, .none),
+    .kFun: ParseRule(null, null, .none),
+    .kIf: ParseRule(null, null, .none),
+    .kNil: ParseRule(literal, null, .none),
+    .kOr: ParseRule(null, or_, .or),
+    .kPrint: ParseRule(null, null, .none),
+    .kReturn: ParseRule(null, null, .none),
+    .kSuper: ParseRule(null, null, .none),
+    .kThis: ParseRule(null, null, .none),
+    .kTrue: ParseRule(literal, null, .none),
+    .kVar: ParseRule(null, null, .none),
+    .kWhile: ParseRule(null, null, .none),
+    .error: ParseRule(null, null, .none),
+    .eof: ParseRule(null, null, .none),
   };
 
   int identifierConstant(Token name) {
@@ -522,7 +522,7 @@ class Compiler {
   }
 
   int parseVariable(String message) {
-    consume(TokenType.identifier, message);
+    consume(.identifier, message);
 
     declareVariable();
     if (scopeDepth > 0) return 0;
@@ -540,23 +540,23 @@ class Compiler {
       return;
     }
 
-    emitOp(OpCode.opDefineGlobal);
+    emitOp(.opDefineGlobal);
     emitByte(global);
   }
 
   void and_(bool canAssign) {
-    var endJump = emitJump(OpCode.opJumpIfFalse);
-    emitOp(OpCode.opPop);
-    parsePrecedence(Precedence.and);
+    var endJump = emitJump(.opJumpIfFalse);
+    emitOp(.opPop);
+    parsePrecedence(.and);
     patchJump(endJump);
   }
 
   void or_(bool canAssign) {
-    var elseJump = emitJump(OpCode.opJumpIfFalse);
-    var endJump = emitJump(OpCode.opJump);
+    var elseJump = emitJump(.opJumpIfFalse);
+    var endJump = emitJump(.opJump);
     patchJump(elseJump);
-    emitOp(OpCode.opPop);
-    parsePrecedence(Precedence.or);
+    emitOp(.opPop);
+    parsePrecedence(.or);
     patchJump(endJump);
   }
 }
@@ -609,6 +609,6 @@ void dump(String source) {
     }
     stderr.printf("%10s '%s'\n", [token.type.name, token.start]);
 
-    if (token.type == TokenType.eof) break;
+    if (token.type == .eof) break;
   }
 }

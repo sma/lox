@@ -160,22 +160,22 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     var left = evaluate(expr.left);
     var right = evaluate(expr.right);
     switch (expr.operator.type) {
-      case GREATER:
+      case .GREATER:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) > (right as double);
-      case GREATER_EQUAL:
+      case .GREATER_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) >= (right as double);
-      case LESS:
+      case .LESS:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) < (right as double);
-      case LESS_EQUAL:
+      case .LESS_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) <= (right as double);
-      case MINUS:
+      case .MINUS:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) - (right as double);
-      case PLUS:
+      case .PLUS:
         if (left is double && right is double) {
           return left + right;
         }
@@ -183,15 +183,15 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
           return left + right;
         }
         throw RuntimeError(expr.operator, 'Operands must be two numbers or two strings.');
-      case SLASH:
+      case .SLASH:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) / (right as double);
-      case STAR:
+      case .STAR:
         checkNumberOperands(expr.operator, left, right);
         return (left as double) * (right as double);
-      case BANG_EQUAL:
+      case .BANG_EQUAL:
         return !isEqual(left, right);
-      case EQUAL_EQUAL:
+      case .EQUAL_EQUAL:
         return isEqual(left, right);
       default:
         return null;
@@ -242,7 +242,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   Object? visitLogicalExpr(Logical expr) {
     var left = evaluate(expr.left);
 
-    if (expr.operator.type == TokenType.OR) {
+    if (expr.operator.type == .OR) {
       if (isTruthy(left)) return left;
     } else {
       if (!isTruthy(left)) return left;
@@ -290,9 +290,9 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     var right = evaluate(expr.right);
 
     switch (expr.operator.type) {
-      case BANG:
+      case .BANG:
         return !isTruthy(right);
-      case MINUS:
+      case .MINUS:
         return -checkNumberOperand(expr.operator, right);
       default:
         return null;
