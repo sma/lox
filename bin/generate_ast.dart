@@ -53,7 +53,7 @@ void defineAst(String outputDir, String baseName, List<String> types) {
 
   writer.writeln("part of 'ast.dart';");
   writer.writeln();
-  writer.writeln('abstract class $baseName {');
+  writer.writeln('sealed class const $baseName() {');
   // The base accept() method.
   writer.writeln('  R accept<R>(${baseName}Visitor<R> visitor);');
   writer.writeln('}');
@@ -84,19 +84,14 @@ void defineVisitor(IOSink writer, String baseName, List<String> types) {
 
 void defineType(IOSink writer, String baseName, String className, String fieldList) {
   writer.writeln();
-  writer.writeln('class $className extends $baseName {');
-
-  // Constructor.
-  writer.writeln('  $className(');
-
+  // Primary constructor.
+  writer.writeln('class const $className(');
   // Store parameters in fields.
   var fields = fieldList.split(', ');
   for (var field in fields) {
-    var name = field.split(' ')[1];
-    writer.writeln('    this.$name,');
+    writer.writeln('  final $field,');
   }
-
-  writer.writeln('  );');
+  writer.writeln(') extends $baseName {');
 
   // Visitor pattern.
   writer.writeln();
@@ -104,12 +99,6 @@ void defineType(IOSink writer, String baseName, String className, String fieldLi
   writer.writeln('  R accept<R>(${baseName}Visitor<R> visitor) {');
   writer.writeln('    return visitor.visit$className$baseName(this);');
   writer.writeln('  }');
-
-  // Fields.
-  writer.writeln();
-  for (var field in fields) {
-    writer.writeln('  final $field;');
-  }
 
   writer.writeln('}');
 }

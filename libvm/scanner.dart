@@ -46,13 +46,7 @@ enum TokenType {
   eof,
 }
 
-class Token {
-  const Token(this.type, this.start, this.line);
-
-  final TokenType type;
-  final String start;
-  final int line;
-
+class const Token(final TokenType type, final String start, final int line) {
   @override
   String toString() => '${type.name}: "$start" at $line';
 

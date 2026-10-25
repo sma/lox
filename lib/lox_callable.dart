@@ -13,13 +13,10 @@ abstract class LoxCallable {
   }
 }
 
-class _Callable implements LoxCallable {
-  @override
-  final int arity;
-  final Object? Function(Interpreter interpreter, List<Object?> arguments) fn;
-
-  _Callable(this.arity, this.fn);
-
+class _Callable(
+  @override final int arity,
+  final Object? Function(Interpreter interpreter, List<Object?> arguments) fn,
+) implements LoxCallable {
   @override
   Object? call(Interpreter interpreter, List<Object?> arguments) {
     return fn(interpreter, arguments);

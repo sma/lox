@@ -2,11 +2,8 @@ import 'ast.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 
-class Parser {
-  final List<Token> _tokens;
+class Parser(final List<Token> _tokens) {
   int _current = 0;
-
-  Parser(this._tokens);
 
   List<Stmt> parse() {
     var statements = <Stmt>[];

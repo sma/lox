@@ -8,10 +8,7 @@ import 'value.dart';
 
 const debugPrintCode = true;
 
-class Compiler {
-  Compiler(this.scanner);
-
-  final Scanner scanner;
+class Compiler(final Scanner scanner) {
   final chunk = Chunk();
 
   Token current = Token.none;

@@ -3,13 +3,11 @@ import 'lox_callable.dart';
 import 'lox_function.dart';
 import 'lox_instance.dart';
 
-class LoxClass implements LoxCallable {
-  final String name;
-  final LoxClass? superclass;
-  final Map<String, LoxFunction> _methods;
-
-  LoxClass(this.name, this.superclass, this._methods);
-
+class LoxClass(
+  final String name,
+  final LoxClass? superclass,
+  final Map<String, LoxFunction> _methods,
+) implements LoxCallable {
   LoxFunction? findMethod(String name) {
     if (_methods.containsKey(name)) {
       return _methods[name];

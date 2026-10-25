@@ -5,13 +5,10 @@ import 'interpreter.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 
-class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
-  final Interpreter interpreter;
+class Resolver(final Interpreter interpreter) implements ExprVisitor<void>, StmtVisitor<void> {
   final List<Map<String, bool>> scopes = [];
   ClassType currentClass = .NONE;
   FunctionType currentFunction = .NONE;
-
-  Resolver(this.interpreter);
 
   void resolve(List<Stmt> statements) {
     for (var statement in statements) {

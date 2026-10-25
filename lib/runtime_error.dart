@@ -1,11 +1,6 @@
 import 'package:lox/token.dart';
 
-class RuntimeError implements Exception {
-  final Token token;
-  final String message;
-
-  RuntimeError(this.token, this.message);
-
+class RuntimeError(final Token token, final String message) implements Exception {
   @override
   String toString() {
     if (token.type == .EOF) {

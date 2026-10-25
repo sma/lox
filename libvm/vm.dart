@@ -9,17 +9,11 @@ const traceInstructions = false;
 
 enum InterpreterResult { ok, compileError, runtimeError }
 
-class CallFrame {
-  CallFrame(this.function, this.slots);
-  final ObjFunction function;
-  final List<Value> slots;
+class CallFrame(final ObjFunction function, final List<Value> slots) {
   int ip = 0;
 }
 
-class VM {
-  VM({required this.sink});
-
-  final StringSink sink;
+class VM({required final StringSink sink}) {
   final frames = <CallFrame>[];
   final stack = <Value>[];
   final globals = <String, Value>{};

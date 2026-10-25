@@ -1,6 +1,6 @@
 part of 'ast.dart';
 
-abstract class Stmt {
+sealed class const Stmt() {
   R accept<R>(StmtVisitor<R> visitor);
 }
 
@@ -16,137 +16,101 @@ abstract class StmtVisitor<R> {
   R visitWhileStmt(While stmt);
 }
 
-class Block extends Stmt {
-  Block(
-    this.statements,
-  );
+class const Block(
+  final List<Stmt> statements,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitBlockStmt(this);
   }
-
-  final List<Stmt> statements;
 }
 
-class Class extends Stmt {
-  Class(
-    this.name,
-    this.superclass,
-    this.methods,
-  );
+class const Class(
+  final Token name,
+  final Variable? superclass,
+  final List<Func> methods,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitClassStmt(this);
   }
-
-  final Token name;
-  final Variable? superclass;
-  final List<Func> methods;
 }
 
-class Expression extends Stmt {
-  Expression(
-    this.expression,
-  );
+class const Expression(
+  final Expr expression,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitExpressionStmt(this);
   }
-
-  final Expr expression;
 }
 
-class Func extends Stmt {
-  Func(
-    this.name,
-    this.params,
-    this.body,
-  );
+class const Func(
+  final Token name,
+  final List<Token> params,
+  final List<Stmt> body,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitFuncStmt(this);
   }
-
-  final Token name;
-  final List<Token> params;
-  final List<Stmt> body;
 }
 
-class If extends Stmt {
-  If(
-    this.condition,
-    this.thenBranch,
-    this.elseBranch,
-  );
+class const If(
+  final Expr condition,
+  final Stmt thenBranch,
+  final Stmt? elseBranch,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitIfStmt(this);
   }
-
-  final Expr condition;
-  final Stmt thenBranch;
-  final Stmt? elseBranch;
 }
 
-class Print extends Stmt {
-  Print(
-    this.expression,
-  );
+class const Print(
+  final Expr expression,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitPrintStmt(this);
   }
-
-  final Expr expression;
 }
 
-class Return extends Stmt {
-  Return(
-    this.keyword,
-    this.value,
-  );
+class const Return(
+  final Token keyword,
+  final Expr? value,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitReturnStmt(this);
   }
-
-  final Token keyword;
-  final Expr? value;
 }
 
-class Var extends Stmt {
-  Var(
-    this.name,
-    this.initializer,
-  );
+class const Var(
+  final Token name,
+  final Expr? initializer,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitVarStmt(this);
   }
-
-  final Token name;
-  final Expr? initializer;
 }
 
-class While extends Stmt {
-  While(
-    this.condition,
-    this.body,
-  );
+class const While(
+  final Expr condition,
+  final Stmt body,
+) extends Stmt {
 
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitWhileStmt(this);
   }
-
-  final Expr condition;
-  final Stmt body;
 }

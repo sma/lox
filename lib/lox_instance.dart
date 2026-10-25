@@ -2,11 +2,8 @@ import 'lox_class.dart';
 import 'runtime_error.dart';
 import 'token.dart';
 
-class LoxInstance {
-  final LoxClass _klass;
+class LoxInstance(final LoxClass _klass) {
   final Map<String, Object?> _fields = {};
-
-  LoxInstance(this._klass);
 
   Object? get(Token name) {
     if (_fields.containsKey(name.lexeme)) {

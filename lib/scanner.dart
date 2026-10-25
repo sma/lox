@@ -1,14 +1,11 @@
 import 'runtime_error.dart';
 import 'token.dart';
 
-class Scanner {
-  final String _source;
+class Scanner(final String _source) {
   final List<Token> _tokens = [];
   int _start = 0;
   int _current = 0;
   int _line = 1;
-
-  Scanner(this._source);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {

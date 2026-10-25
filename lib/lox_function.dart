@@ -5,13 +5,11 @@ import 'lox_callable.dart';
 import 'lox_instance.dart';
 import 'lox_return.dart';
 
-class LoxFunction implements LoxCallable {
-  final Func _declaration;
-  final Environment _closure;
-  final bool _isInitializer;
-
-  LoxFunction(this._declaration, this._closure, this._isInitializer);
-
+class LoxFunction(
+  final Func _declaration,
+  final Environment _closure,
+  final bool _isInitializer,
+) implements LoxCallable {
   LoxFunction bind(LoxInstance instance) {
     var environment = Environment(_closure);
     environment.define('this', instance);

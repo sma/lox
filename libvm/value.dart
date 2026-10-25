@@ -1,9 +1,7 @@
 import 'chunk.dart';
 import 'printf.dart';
 
-sealed class Value {
-  const Value();
-
+sealed class const Value() {
   factory Value.as(Object? value) => switch (value) {
     null => Nil(),
     bool value => Bool(value),
@@ -16,9 +14,7 @@ sealed class Value {
   static const nil = Nil();
 }
 
-class Nil extends Value {
-  const Nil();
-
+class const Nil() extends Value {
   @override
   bool get isFalsey => true;
 
@@ -26,11 +22,7 @@ class Nil extends Value {
   String toString() => 'nil';
 }
 
-class Bool extends Value {
-  const Bool(this.value);
-
-  final bool value;
-
+class const Bool(final bool value) extends Value {
   @override
   bool get isFalsey => !value;
 
@@ -44,11 +36,7 @@ class Bool extends Value {
   int get hashCode => value.hashCode;
 }
 
-class Number extends Value {
-  const Number(this.value);
-
-  final double value;
-
+class const Number(final double value) extends Value {
   @override
   String toString() => '$value';
 
@@ -59,15 +47,9 @@ class Number extends Value {
   int get hashCode => value.hashCode;
 }
 
-sealed class Obj extends Value {
-  const Obj();
-}
+sealed class const Obj() extends Value;
 
-class ObjString extends Obj {
-  const ObjString(this.value);
-
-  final String value;
-
+class const ObjString(final String value) extends Obj {
   @override
   String toString() => value;
 
@@ -78,13 +60,7 @@ class ObjString extends Obj {
   int get hashCode => value.hashCode;
 }
 
-class ObjFunction extends Obj {
-  ObjFunction(this.chunk, [this.arity = 0, this.name]);
-
-  final Chunk chunk;
-  int arity;
-  String? name;
-
+class ObjFunction(final Chunk chunk, [var int arity = 0, var String? name]) extends Obj {
   @override
   String toString() => '<fn ${name ?? '<script>'}>';
 }
