@@ -48,7 +48,7 @@ enum TokenType {
   WHILE,
 
   // End of file.
-  EOF
+  EOF,
 }
 
 // for compatibility with Java

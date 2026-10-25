@@ -5,11 +5,11 @@ sealed class Value {
   const Value();
 
   factory Value.as(Object? value) => switch (value) {
-        null => Nil(),
-        bool value => Bool(value),
-        double value => Number(value),
-        _ => throw ArgumentError(),
-      };
+    null => Nil(),
+    bool value => Bool(value),
+    double value => Number(value),
+    _ => throw ArgumentError(),
+  };
 
   bool get isFalsey => false;
 

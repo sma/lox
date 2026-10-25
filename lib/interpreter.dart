@@ -208,9 +208,10 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
       }
       if (arguments.length != callee.arity) {
         throw RuntimeError(
-            expr.paren,
-            'Expected ${callee.arity} arguments '
-            'but got ${arguments.length}.');
+          expr.paren,
+          'Expected ${callee.arity} arguments '
+          'but got ${arguments.length}.',
+        );
       }
       return callee.call(this, arguments);
     }

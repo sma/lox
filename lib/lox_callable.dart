@@ -5,7 +5,10 @@ abstract class LoxCallable {
 
   Object? call(Interpreter interpreter, List<Object?> arguments);
 
-  factory LoxCallable(int arity, Object? Function(Interpreter interpreter, List<Object?> arguments) fn) {
+  factory LoxCallable(
+    int arity,
+    Object? Function(Interpreter interpreter, List<Object?> arguments) fn,
+  ) {
     return _Callable(arity, fn);
   }
 }

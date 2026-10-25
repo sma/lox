@@ -105,7 +105,9 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     scopes.last['this'] = true;
 
     for (var method in stmt.methods) {
-      var declaration = method.name.lexeme == 'init' ? FunctionType.INITIALIZER : FunctionType.METHOD;
+      var declaration = method.name.lexeme == 'init'
+          ? FunctionType.INITIALIZER
+          : FunctionType.METHOD;
       resolveFunction(method, declaration);
     }
 

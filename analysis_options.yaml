@@ -10,3 +10,7 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
+
+formatter:
+  page_width: 100
+  trailing_commas: preserve

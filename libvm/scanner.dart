@@ -60,10 +60,7 @@ class Token {
 }
 
 class Scanner {
-  Scanner(this.source)
-      : start = 0,
-        current = 0,
-        line = 1;
+  Scanner(this.source) : start = 0, current = 0, line = 1;
 
   final String source;
   int start;
